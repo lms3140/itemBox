@@ -10,6 +10,7 @@ import {
 import styled from "styled-components";
 import { TItemDetailObj } from "./type";
 import { Link, useNavigate } from "react-router-dom";
+import { formDataToObj } from "./utils";
 
 //agGrid를 사용하기 위한 설정... 이게 뭔지는 제대로 모르겠음
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -66,8 +67,7 @@ function App() {
 
   const submit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const dataObj = Object.fromEntries(formData) as TGoods;
+    const dataObj = formDataToObj<TGoods>(event.currentTarget);
     console.log(event);
     // 숫자
     if (Number.isNaN(Number(dataObj.price))) {

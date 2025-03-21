@@ -5,6 +5,7 @@ import InfoItem from "../components/InfoItem";
 import { AgGridReact } from "ag-grid-react";
 import { GridReadyEvent, type ColDef } from "ag-grid-community";
 import { useState } from "react";
+import { formDataToObj } from "../utils";
 
 // styled components
 const Wrapper = styled.div`
@@ -27,9 +28,46 @@ const InfoWrapper = styled.div`
   }
 `;
 
-const ListFormWrapper = styled.div``;
+const ListFormWrapper = styled.div`
+  margin-top: 5px;
+  border-radius: 5px;
+  width: 500px;
+  background-color: aliceblue;
+  padding: 5px 4px 10px 4px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+`;
+
+const ListForm = styled.form`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  div {
+    margin: 5px;
+  }
+
+  input {
+    border: 1px solid #ccc;
+    padding: 10px;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  button {
+    grid-column: span 2;
+    border: #ccc 1px solid;
+    border-radius: 5px;
+    width: 300px;
+    justify-self: center;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+`;
 
 // styled components end
+
 // 테스트
 const testObj: TItemDetailObj = {
   name: "미피 벞어진 인형",
@@ -64,6 +102,7 @@ const gridReady = (event: GridReadyEvent<TColItem, any>) => {
 
 function Detail() {
   const { id } = useParams();
+  const [rowData, setRowData] = useState<TColItem[]>([]);
 
   const [colDefs, setColDefs] = useState<ColDef<TColItem>[]>([
     { field: "customerName", headerName: "주문자" },
@@ -73,8 +112,12 @@ function Detail() {
     { field: "etc", headerName: "비고" },
   ]);
 
-  const [rowData, setRowData] = useState<TColItem[]>([]);
-
+  // submit 함수
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formDataObject = formDataToObj<TColItem>(event.currentTarget);
+    setRowData((v) => [...v, formDataObject]);
+  };
   return (
     <>
       <Wrapper>
@@ -98,13 +141,29 @@ function Detail() {
         </InfoWrapper>
 
         <ListFormWrapper>
-          <form>
-            <input type="text" name="customerName" placeholder="주문자" />
-            <input type="text" name="customerAddress" placeholder="주소" />
-            <input type="text" name="payment" placeholder="결제금액" />
-            <input type="text" name="platform" placeholder="판매플랫폼" />
-            <input type="text" name="etc" placeholder="비고" />
-          </form>
+          <ListForm onSubmit={onSubmit}>
+            <div>
+              <label htmlFor="">주문자</label>
+              <input type="text" name="customerName" placeholder="주문자" />
+            </div>
+            <div>
+              <label htmlFor="">주소</label>
+              <input type="text" name="customerAddress" placeholder="주소" />
+            </div>
+            <div>
+              <label htmlFor="">결제금액</label>
+              <input type="text" name="payment" placeholder="결제금액" />
+            </div>
+            <div>
+              <label htmlFor="">판매 플랫폼</label>
+              <input type="text" name="platform" placeholder="판매플랫폼" />
+            </div>
+            <div>
+              <label htmlFor="">비고</label>
+              <input type="text" name="etc" placeholder="비고" />
+            </div>
+            <button>등록</button>
+          </ListForm>
         </ListFormWrapper>
 
         <div style={{ width: 500, height: 500 }}>

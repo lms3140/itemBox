@@ -3,8 +3,14 @@ import { TItemDetailObj } from "../type";
 import styled from "styled-components";
 import InfoItem from "../components/InfoItem";
 import { AgGridReact } from "ag-grid-react";
-import { GridReadyEvent, type ColDef } from "ag-grid-community";
-import { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+import {
+  GridReadyEvent,
+  RowSelectionMode,
+  RowSelectionOptions,
+  type ColDef,
+} from "ag-grid-community";
+import { useMemo, useRef, useState } from "react";
 import { formDataToObj } from "../utils";
 
 // styled components
@@ -88,6 +94,7 @@ const testObj: TItemDetailObj = {
 
 // 타입
 type TColItem = {
+  id: string;
   customerName: string;
   platform: string;
   payment: string;
@@ -102,9 +109,11 @@ const gridReady = (event: GridReadyEvent<TColItem, any>) => {
 
 function Detail() {
   const { id } = useParams();
+  const gridRef = useRef<AgGridReact<TColItem>>(null);
   const [rowData, setRowData] = useState<TColItem[]>([]);
 
   const [colDefs, setColDefs] = useState<ColDef<TColItem>[]>([
+    { field: "id", headerName: "id", width: 80, hide: true },
     { field: "customerName", headerName: "주문자" },
     { field: "customerAddress", headerName: "주소" },
     { field: "payment", headerName: "결제금액" },
@@ -116,8 +125,26 @@ function Detail() {
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formDataObject = formDataToObj<TColItem>(event.currentTarget);
+    formDataObject.id = uuidv4();
     setRowData((v) => [...v, formDataObject]);
+    event.currentTarget.reset();
   };
+
+  const clickDeleteBtn = () => {
+    const selected = gridRef.current?.api.getSelectedRows();
+    if (!selected || selected.length === 0) return;
+
+    const id = selected[0].id;
+
+    setRowData((prev) => prev.filter((row) => row.id !== id));
+  };
+
+  const rowSelection = useMemo<RowSelectionOptions<TColItem, any>>(() => {
+    return {
+      mode: "singleRow",
+    };
+  }, []);
+
   return (
     <>
       <Wrapper>
@@ -166,8 +193,13 @@ function Detail() {
           </ListForm>
         </ListFormWrapper>
 
-        <div style={{ width: 500, height: 500 }}>
+        <div style={{ width: 800, height: 500 }}>
+          <div>
+            <button onClick={clickDeleteBtn}>삭제</button>
+          </div>
           <AgGridReact
+            ref={gridRef}
+            rowSelection={rowSelection}
             onGridReady={gridReady}
             columnDefs={colDefs}
             rowData={rowData}

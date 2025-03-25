@@ -1,7 +1,8 @@
 export type TItemDetailObj = {
+  id: string;
   name: string; // 이름
   price: string; // 실제 가격
-  categoryPrice: string;
+  categoryPrice: string; // 소비자가
   wholesalePrice: string; // 도매가
   category: string; // 카테고리
   fee: string; // 수수료

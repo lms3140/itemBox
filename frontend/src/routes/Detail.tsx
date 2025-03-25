@@ -76,6 +76,7 @@ const ListForm = styled.form`
 
 // 테스트 Object
 const testObj: TItemDetailObj = {
+  id: "_",
   name: "미피 벞어진 인형",
   category: "인형",
   wholesalePrice: "864",
@@ -165,11 +166,6 @@ function Detail() {
       }
     }
   };
-
-  //수정모드 전환 버튼
-  // const editModeChange = () => {
-  //   setEditMode((prev) => !prev);
-  // };
 
   const rowSelection = useMemo<RowSelectionOptions<TColItem, any>>(() => {
     return {

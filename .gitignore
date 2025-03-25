@@ -27,3 +27,4 @@ frontend/*.sw?
 # 플라스크
 backend/.venv/
 backend/database*
+*.pyc

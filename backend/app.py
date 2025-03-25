@@ -41,6 +41,14 @@ def get_gridData():
       "category": "dolls",
     }]),200
 
+# [POST] /api/editDetailGridData 변경된 정보.
+@app.route("/api/editDetailGridData",methods=["POST"])
+def post_detailData():
+    data = request.get_json()
+    if not data: 
+        return jsonify({"error":"NoData provided-_-"}),400
+    return jsonify({"message": "Data received successfully", "data": data}), 200
+
 # [POST] /api/postData 데이터 받아오기
 @app.route("/api/postData", methods=["POST"])
 def post_data():

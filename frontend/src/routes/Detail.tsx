@@ -5,6 +5,7 @@ import InfoItem from "../components/InfoItem";
 import { AgGridReact } from "ag-grid-react";
 import { v4 as uuidv4 } from "uuid";
 import {
+  CellValueChangedEvent,
   GridReadyEvent,
   RowSelectionMode,
   RowSelectionOptions,
@@ -13,7 +14,8 @@ import {
 import { useMemo, useRef, useState } from "react";
 import { formDataToObj } from "../utils";
 
-// styled components
+// styledComponents
+
 const Wrapper = styled.div`
   display: flex;
   justify-content: center;
@@ -72,9 +74,7 @@ const ListForm = styled.form`
   }
 `;
 
-// styled components end
-
-// 테스트
+// 테스트 Object
 const testObj: TItemDetailObj = {
   name: "미피 벞어진 인형",
   category: "인형",
@@ -90,8 +90,6 @@ const testObj: TItemDetailObj = {
   etc: "",
 };
 
-// 테스트 끝
-
 // 타입
 type TColItem = {
   id: string;
@@ -102,7 +100,6 @@ type TColItem = {
   etc: string;
 };
 
-// AGGrid 함수
 const gridReady = (event: GridReadyEvent<TColItem, any>) => {
   event.api.sizeColumnsToFit();
 };
@@ -114,11 +111,15 @@ function Detail() {
 
   const [colDefs, setColDefs] = useState<ColDef<TColItem>[]>([
     { field: "id", headerName: "id", width: 80, hide: true },
-    { field: "customerName", headerName: "주문자" },
-    { field: "customerAddress", headerName: "주소" },
-    { field: "payment", headerName: "결제금액" },
-    { field: "platform", headerName: "판매플랫폼" },
-    { field: "etc", headerName: "비고" },
+    {
+      field: "customerName",
+      headerName: "주문자",
+      editable: true,
+    },
+    { field: "customerAddress", headerName: "주소", editable: true },
+    { field: "payment", headerName: "결제금액", editable: true },
+    { field: "platform", headerName: "판매플랫폼", editable: true },
+    { field: "etc", headerName: "비고", editable: true },
   ]);
 
   // submit 함수
@@ -130,14 +131,45 @@ function Detail() {
     event.currentTarget.reset();
   };
 
+  // 삭제버튼
   const clickDeleteBtn = () => {
     const selected = gridRef.current?.api.getSelectedRows();
     if (!selected || selected.length === 0) return;
-
     const id = selected[0].id;
-
     setRowData((prev) => prev.filter((row) => row.id !== id));
   };
+
+  const onCellValueChanged = async (
+    e: CellValueChangedEvent<TColItem, any>
+  ) => {
+    const { newValue, oldValue } = e;
+    const colField = e.column.getColDef().field;
+    const dataObj = {
+      newValue,
+      id: e.data.id,
+    };
+    try {
+      await fetch("http://127.0.0.1:5000/api/editDetailGridData", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dataObj),
+      })
+        .then((res) => res.json())
+        .then((data) => console.log(data));
+    } catch (error) {
+      //에러난경우
+      if (colField) {
+        e.api.getRowNode(e.data.id)?.setDataValue(colField, oldValue);
+      }
+    }
+  };
+
+  //수정모드 전환 버튼
+  // const editModeChange = () => {
+  //   setEditMode((prev) => !prev);
+  // };
 
   const rowSelection = useMemo<RowSelectionOptions<TColItem, any>>(() => {
     return {
@@ -199,10 +231,12 @@ function Detail() {
           </div>
           <AgGridReact
             ref={gridRef}
+            getRowId={(p) => p.data.id}
             rowSelection={rowSelection}
             onGridReady={gridReady}
             columnDefs={colDefs}
             rowData={rowData}
+            onCellValueChanged={onCellValueChanged}
           />
         </div>
       </Wrapper>

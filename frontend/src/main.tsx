@@ -10,7 +10,7 @@ const router = createBrowserRouter([
     element: <App />,
   },
   {
-    path: "/detail/:id",
+    path: "/detail/:paramId",
     element: <Detail />,
   },
 ]);

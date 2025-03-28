@@ -12,7 +12,8 @@ import {
   type ColDef,
 } from "ag-grid-community";
 import { useMemo, useRef, useState } from "react";
-import { formDataToObj } from "../utils";
+import { formDataToObj } from "../utils/utils";
+import { deleteRowFunc } from "../utils/gridUtils";
 
 // styledComponents
 
@@ -99,14 +100,11 @@ type TColItem = {
   payment: string;
   customerAddress: string;
   etc: string;
-};
-
-const gridReady = (event: GridReadyEvent<TColItem, any>) => {
-  event.api.sizeColumnsToFit();
+  itemId: string;
 };
 
 function Detail() {
-  const { id } = useParams();
+  const { paramId } = useParams();
   const gridRef = useRef<AgGridReact<TColItem>>(null);
   const [rowData, setRowData] = useState<TColItem[]>([]);
 
@@ -123,42 +121,59 @@ function Detail() {
     { field: "etc", headerName: "비고", editable: true },
   ]);
 
+  const gridReady = (event: GridReadyEvent<TColItem, any>) => {
+    event.api.sizeColumnsToFit();
+    fetch(`http://127.0.0.1:5000/api/getDetailGridData/${paramId}`)
+      .then((res) => res.json())
+      .then((data) => setRowData((prev) => [...prev, ...data]));
+  };
+
   // submit 함수
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    console.log(paramId);
+    if (!paramId) return;
     const formDataObject = formDataToObj<TColItem>(event.currentTarget);
     formDataObject.id = uuidv4();
+    formDataObject.itemId = paramId;
     setRowData((v) => [...v, formDataObject]);
     event.currentTarget.reset();
+
+    fetch("http://127.0.0.1:5000/api/insertDetailData", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formDataObject),
+    })
+      .then((res) => res.json())
+      .then((data) => console.log(data));
   };
 
   // 삭제버튼
   const clickDeleteBtn = () => {
-    const selected = gridRef.current?.api.getSelectedRows();
-    if (!selected || selected.length === 0) return;
-    const id = selected[0].id;
-    setRowData((prev) => prev.filter((row) => row.id !== id));
+    if (gridRef === null) return;
+    const apiUrl = "http://127.0.0.1:5000/api/deleteDetailGridData";
+    deleteRowFunc(apiUrl, gridRef, setRowData);
   };
 
+  //셀을 수정할 경우 실행
   const onCellValueChanged = async (
     e: CellValueChangedEvent<TColItem, any>
   ) => {
-    const { newValue, oldValue } = e;
+    console.log(e);
+    const { newValue, oldValue, data } = e;
     const colField = e.column.getColDef().field;
-    const dataObj = {
-      newValue,
-      id: e.data.id,
-    };
     try {
-      await fetch("http://127.0.0.1:5000/api/editDetailGridData", {
+      const res = await fetch("http://127.0.0.1:5000/api/editDetailGridData", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(dataObj),
-      })
-        .then((res) => res.json())
-        .then((data) => console.log(data));
+        body: JSON.stringify(data),
+      });
+      const result = await res.json();
+      console.log(result);
     } catch (error) {
       //에러난경우
       if (colField) {

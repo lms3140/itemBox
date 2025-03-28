@@ -10,7 +10,7 @@ import {
 import styled from "styled-components";
 import { TItemDetailObj } from "./type";
 import { Link, useNavigate } from "react-router-dom";
-import { formDataToObj } from "./utils";
+import { formDataToObj } from "./utils/utils";
 
 //agGrid를 사용하기 위한 설정... 이게 뭔지는 제대로 모르겠음
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -41,14 +41,6 @@ const FormWrapper = styled.div`
 `;
 
 // styled-components end
-
-// 데이터 타입
-type TGoods = {
-  id: string;
-  name: string;
-  price: string;
-  category: string;
-};
 
 function App() {
   const navigate = useNavigate();
@@ -180,7 +172,6 @@ function App() {
           </FormWrapper>
         </SideMenu>
       </Wrapper>
-      <Link to={"/detail/11"}>123</Link>
     </>
   );
 }

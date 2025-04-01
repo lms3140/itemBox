@@ -11,9 +11,9 @@ import {
   RowSelectionOptions,
   type ColDef,
 } from "ag-grid-community";
-import { useMemo, useRef, useState } from "react";
-import { formDataToObj } from "../utils/utils";
-import { deleteRowFunc } from "../utils/gridUtils";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { formDataToObj, postDataFetch } from "../utils/utils";
+import { cellValueChangeHandler, deleteRowFunc } from "../utils/gridUtils";
 
 // styledComponents
 
@@ -75,21 +75,13 @@ const ListForm = styled.form`
   }
 `;
 
-// 테스트 Object
-const testObj: TItemDetailObj = {
-  id: "_",
-  name: "미피 벞어진 인형",
-  category: "인형",
-  wholesalePrice: "864",
-  categoryPrice: "1000",
-  price: "23000",
-  fee: "200",
-  purchaseDate: "2025-03-10",
-  purchaseQuantity: "2",
-  releaseDate: "2025-02-10",
-  soldQuantity: "1",
-  salesType: "재고",
-  etc: "",
+const BASE_URL = "http://127.0.0.1:5000";
+
+//URL OBJECT
+const apiUrlObj = {
+  add: `${BASE_URL}/api/insertDetailData`,
+  update: `${BASE_URL}/api/editDetailGridData`,
+  delete: `${BASE_URL}/api/deleteDetailGridData`,
 };
 
 // 타입
@@ -107,6 +99,7 @@ function Detail() {
   const { paramId } = useParams();
   const gridRef = useRef<AgGridReact<TColItem>>(null);
   const [rowData, setRowData] = useState<TColItem[]>([]);
+  const [detailInfo, setDetailInfo] = useState<TItemDetailObj>();
 
   const [colDefs, setColDefs] = useState<ColDef<TColItem>[]>([
     { field: "id", headerName: "id", width: 80, hide: true },
@@ -120,6 +113,18 @@ function Detail() {
     { field: "platform", headerName: "판매플랫폼", editable: true },
     { field: "etc", headerName: "비고", editable: true },
   ]);
+  const fetchDetailInfo = async () => {
+    const res = await fetch(`${BASE_URL}/api/getDetailInfo/${paramId}`);
+    return res.json();
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const result = await fetchDetailInfo();
+      setDetailInfo((prev) => (prev = result));
+    };
+    fetchData();
+  }, []);
 
   const gridReady = (event: GridReadyEvent<TColItem, any>) => {
     event.api.sizeColumnsToFit();
@@ -139,7 +144,7 @@ function Detail() {
     setRowData((v) => [...v, formDataObject]);
     event.currentTarget.reset();
 
-    fetch("http://127.0.0.1:5000/api/insertDetailData", {
+    fetch(apiUrlObj.add, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -153,33 +158,7 @@ function Detail() {
   // 삭제버튼
   const clickDeleteBtn = () => {
     if (gridRef === null) return;
-    const apiUrl = "http://127.0.0.1:5000/api/deleteDetailGridData";
-    deleteRowFunc(apiUrl, gridRef, setRowData);
-  };
-
-  //셀을 수정할 경우 실행
-  const onCellValueChanged = async (
-    e: CellValueChangedEvent<TColItem, any>
-  ) => {
-    console.log(e);
-    const { newValue, oldValue, data } = e;
-    const colField = e.column.getColDef().field;
-    try {
-      const res = await fetch("http://127.0.0.1:5000/api/editDetailGridData", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-      const result = await res.json();
-      console.log(result);
-    } catch (error) {
-      //에러난경우
-      if (colField) {
-        e.api.getRowNode(e.data.id)?.setDataValue(colField, oldValue);
-      }
-    }
+    deleteRowFunc(apiUrlObj.delete, gridRef, setRowData);
   };
 
   const rowSelection = useMemo<RowSelectionOptions<TColItem, any>>(() => {
@@ -191,23 +170,19 @@ function Detail() {
   return (
     <>
       <Wrapper>
-        <h1>{testObj.name}</h1>
+        <h1>{detailInfo?.name}</h1>
         <InfoWrapper>
-          <InfoItem title="도매가" content={testObj.wholesalePrice} />
-          <InfoItem title="소비자명시가" content={testObj.categoryPrice} />
-          <InfoItem title="판매가" content={testObj.price} />
-          <InfoItem title="수수료" content={testObj.fee} />
-          <InfoItem title="카테고리" content={testObj.category} />
-          <InfoItem title="판매형식" content={testObj.salesType} />
-          <InfoItem title="주문수량" content={testObj.purchaseQuantity} />
-          <InfoItem title="판매한수량" content={testObj.soldQuantity} />
-          <InfoItem title="발매일자" content={testObj.releaseDate} />
-          <InfoItem title="주문일자" content={testObj.purchaseDate} />
-          <InfoItem
-            className="etc"
-            title="비고"
-            content={testObj.soldQuantity}
-          />
+          <InfoItem title="도매가" content={detailInfo?.wholesale_price} />
+          <InfoItem title="소비자명시가" content={detailInfo?.category_price} />
+          <InfoItem title="판매가" content={detailInfo?.price} />
+          <InfoItem title="수수료" content={detailInfo?.fee} />
+          <InfoItem title="카테고리" content={detailInfo?.category} />
+          <InfoItem title="판매형식" content={detailInfo?.sales_type} />
+          <InfoItem title="주문수량" content={detailInfo?.purchase_quantity} />
+          <InfoItem title="판매한수량" content={detailInfo?.sold_quantity} />
+          <InfoItem title="발매일자" content={detailInfo?.release_date} />
+          <InfoItem title="주문일자" content={detailInfo?.purchase_date} />
+          <InfoItem className="etc" title="비고" content={detailInfo?.etc} />
         </InfoWrapper>
 
         <ListFormWrapper>
@@ -238,7 +213,13 @@ function Detail() {
 
         <div style={{ width: 800, height: 500 }}>
           <div>
-            <button onClick={clickDeleteBtn}>삭제</button>
+            <button
+              onClick={() => {
+                deleteRowFunc(apiUrlObj.delete, gridRef, setRowData);
+              }}
+            >
+              삭제
+            </button>
           </div>
           <AgGridReact
             ref={gridRef}
@@ -247,7 +228,9 @@ function Detail() {
             onGridReady={gridReady}
             columnDefs={colDefs}
             rowData={rowData}
-            onCellValueChanged={onCellValueChanged}
+            onCellValueChanged={(e) => {
+              cellValueChangeHandler(e, apiUrlObj.update);
+            }}
           />
         </div>
       </Wrapper>

@@ -16,7 +16,7 @@ const Content = styled.div``;
 
 type InfoItemProps = {
   title: string;
-  content: string;
+  content?: string;
   className?: string;
 };
 

@@ -1,27 +1,14 @@
+import { InputHTMLAttributes } from "react";
+
 type inputLabel = {
   label: string;
-  name: string;
-  type: React.HTMLInputTypeAttribute;
-  placeholder: string;
-  required?: boolean;
-};
+} & InputHTMLAttributes<HTMLInputElement>;
 
-export default function InputLabel({
-  label,
-  name,
-  type,
-  placeholder,
-  required,
-}: inputLabel) {
+export default function InputLabel({ label, ...inputProps }: inputLabel) {
   return (
     <div>
       <label>{label}</label>
-      <input
-        required={required}
-        type={type}
-        name={name}
-        placeholder={placeholder}
-      />
+      <input {...inputProps} />
     </div>
   );
 }

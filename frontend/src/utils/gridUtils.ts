@@ -1,6 +1,7 @@
 import { AgGridReact } from "ag-grid-react";
-import { postDataFetch } from "./utils";
-import { CellValueChangedEvent } from "ag-grid-community";
+import { getDataFetch, postDataFetch } from "./utils";
+import { CellValueChangedEvent, GridReadyEvent } from "ag-grid-community";
+import { Dispatch, SetStateAction } from "react";
 
 /**
  * "AG Grid"에서 하나의 행을 삭제하기 위한 함수
@@ -36,7 +37,17 @@ export const deleteRowFunc = async <T extends { id: string }>(
   }
 };
 
-// cellValueChanged
+/**
+ * "AG grid"에서 셀 하나의 수정을 위한 함수
+ *
+ * @example
+ * <AgGridReact
+ *  onCellValueChanged={(e)=>{cellValueChangeHandler(e,api_URL)}}
+ * />
+ *
+ * @param e onCellValueChanged 이벤트 객체
+ * @param url AG grid 수정 API URL
+ */
 
 export const cellValueChangeHandler = async <T extends { id: string }>(
   e: CellValueChangedEvent<T, any>,
@@ -58,5 +69,17 @@ export const cellValueChangeHandler = async <T extends { id: string }>(
     targetData[key] = oldValue;
     e.api.getRowNode(e.data.id)?.setData(targetData);
     e.api.refreshCells({ rowNodes: [e.node], columns: [colField] });
+  }
+};
+
+export const loadGridData = async <T>(
+  url: string,
+  setRowData: Dispatch<SetStateAction<T[]>>
+) => {
+  try {
+    const res = (await getDataFetch(url)) as T[];
+    setRowData((prev) => [...prev, ...res]);
+  } catch (e) {
+    throw e;
   }
 };

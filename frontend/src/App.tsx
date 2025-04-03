@@ -15,7 +15,11 @@ import styled from "styled-components";
 import { TItemDetailObj } from "./type";
 import { Link, useNavigate } from "react-router-dom";
 import { formDataToObj, postDataFetch } from "./utils/utils";
-import { cellValueChangeHandler, deleteRowFunc } from "./utils/gridUtils";
+import {
+  cellValueChangeHandler,
+  deleteRowFunc,
+  loadGridData,
+} from "./utils/gridUtils";
 import InputLabel from "./components/InputLabel";
 
 //agGrid를 사용하기 위한 설정... 이게 뭔지는 제대로 모르겠음
@@ -121,25 +125,18 @@ function App() {
   const [rowData, setRowData] = useState<TItemDetailObj[]>([]);
   const gridRef = useRef<AgGridReact<TItemDetailObj>>(null);
 
-  const submit = (event: React.FormEvent<HTMLFormElement>) => {
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const dataObj = formDataToObj<TItemDetailObj>(event.currentTarget);
-    dataObj.id = uuidv4();
-    console.log(dataObj);
+    try {
+      const dataObj = formDataToObj<TItemDetailObj>(event.currentTarget);
+      dataObj.id = uuidv4();
+      await postDataFetch(apiUrl.add, dataObj);
 
-    setRowData((v) => [...v, dataObj]);
-
-    postDataFetch(apiUrl.add, dataObj);
-  };
-
-  //데이터 받아오기
-  const getGridData = () => {
-    fetch(apiUrl.get)
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        setRowData((prev) => [...prev, ...data]);
-      });
+      setRowData((v) => [...v, dataObj]);
+      event.currentTarget.reset();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const rowSelection = useMemo<RowSelectionOptions<TItemDetailObj, any>>(() => {
@@ -158,13 +155,14 @@ function App() {
     navigate(`/detail/${id}`);
   };
 
-  /**
-   * AG Grid가 준비되었을때 실행되는 함수
-   * @param event - AG Grid 이벤트 객체
-   */
-  const gridReady = (event: GridReadyEvent<TItemDetailObj, any>) => {
+  // agGrid가 마운트 될때 실행되는 함수.
+  const gridReady = async (event: GridReadyEvent<TItemDetailObj, any>) => {
     event.api.sizeColumnsToFit();
-    getGridData();
+    try {
+      await loadGridData(apiUrl.get, setRowData);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (

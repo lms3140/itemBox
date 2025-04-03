@@ -12,8 +12,13 @@ import {
   type ColDef,
 } from "ag-grid-community";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { formDataToObj, postDataFetch } from "../utils/utils";
-import { cellValueChangeHandler, deleteRowFunc } from "../utils/gridUtils";
+import { formDataToObj, getDataFetch, postDataFetch } from "../utils/utils";
+import {
+  cellValueChangeHandler,
+  deleteRowFunc,
+  loadGridData,
+} from "../utils/gridUtils";
+import InputLabel from "../components/InputLabel";
 
 // styledComponents
 
@@ -82,6 +87,7 @@ const apiUrlObj = {
   add: `${BASE_URL}/api/insertDetailData`,
   update: `${BASE_URL}/api/editDetailGridData`,
   delete: `${BASE_URL}/api/deleteDetailGridData`,
+  get: (id: string) => `${BASE_URL}/api/getDetailGridData/${id}`,
 };
 
 // 타입
@@ -101,7 +107,7 @@ function Detail() {
   const [rowData, setRowData] = useState<TColItem[]>([]);
   const [detailInfo, setDetailInfo] = useState<TItemDetailObj>();
 
-  const [colDefs, setColDefs] = useState<ColDef<TColItem>[]>([
+  const [colDefs, _] = useState<ColDef<TColItem>[]>([
     { field: "id", headerName: "id", width: 80, hide: true },
     {
       field: "customerName",
@@ -126,39 +132,31 @@ function Detail() {
     fetchData();
   }, []);
 
-  const gridReady = (event: GridReadyEvent<TColItem, any>) => {
+  const gridReady = async (event: GridReadyEvent<TColItem, any>) => {
     event.api.sizeColumnsToFit();
-    fetch(`http://127.0.0.1:5000/api/getDetailGridData/${paramId}`)
-      .then((res) => res.json())
-      .then((data) => setRowData((prev) => [...prev, ...data]));
+    if (!paramId) return;
+    try {
+      await loadGridData(apiUrlObj.get(paramId), setRowData);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   // submit 함수
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log(paramId);
     if (!paramId) return;
-    const formDataObject = formDataToObj<TColItem>(event.currentTarget);
-    formDataObject.id = uuidv4();
-    formDataObject.itemId = paramId;
-    setRowData((v) => [...v, formDataObject]);
-    event.currentTarget.reset();
+    try {
+      const dataObj = formDataToObj<TColItem>(event.currentTarget);
+      dataObj.id = uuidv4();
+      dataObj.itemId = paramId;
 
-    fetch(apiUrlObj.add, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formDataObject),
-    })
-      .then((res) => res.json())
-      .then((data) => console.log(data));
-  };
-
-  // 삭제버튼
-  const clickDeleteBtn = () => {
-    if (gridRef === null) return;
-    deleteRowFunc(apiUrlObj.delete, gridRef, setRowData);
+      await postDataFetch(apiUrlObj.add, dataObj);
+      setRowData((v) => [...v, dataObj]);
+      event.currentTarget.reset();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const rowSelection = useMemo<RowSelectionOptions<TColItem, any>>(() => {
@@ -187,26 +185,27 @@ function Detail() {
 
         <ListFormWrapper>
           <ListForm onSubmit={onSubmit}>
-            <div>
-              <label htmlFor="">주문자</label>
-              <input type="text" name="customerName" placeholder="주문자" />
-            </div>
-            <div>
-              <label htmlFor="">주소</label>
-              <input type="text" name="customerAddress" placeholder="주소" />
-            </div>
-            <div>
-              <label htmlFor="">결제금액</label>
-              <input type="text" name="payment" placeholder="결제금액" />
-            </div>
-            <div>
-              <label htmlFor="">판매 플랫폼</label>
-              <input type="text" name="platform" placeholder="판매플랫폼" />
-            </div>
-            <div>
-              <label htmlFor="">비고</label>
-              <input type="text" name="etc" placeholder="비고" />
-            </div>
+            <InputLabel
+              label="주문자"
+              name="customerName"
+              placeholder="주문자"
+            />
+            <InputLabel
+              label="주소"
+              name="customerAddress"
+              placeholder="주소"
+            />
+            <InputLabel
+              label="결제금액"
+              name="payment"
+              placeholder="결제금액"
+            />
+            <InputLabel
+              label="판매 플랫폼"
+              name="platform"
+              placeholder="판매플랫폼"
+            />
+            <InputLabel label="비고" name="etc" placeholder="비고" />
             <button>등록</button>
           </ListForm>
         </ListFormWrapper>

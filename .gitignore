@@ -28,3 +28,5 @@ frontend/*.sw?
 backend/.venv/
 backend/database*
 *.pyc
+backend/instance/database.db
+backend/models.py

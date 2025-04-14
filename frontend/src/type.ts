@@ -12,4 +12,6 @@ export type TItemDetailObj = {
   release_date: string; // 발매날짜
   sales_type: string; // 판매유형
   etc: string; // 비고
+  created_by: string; // 작성자 (소유자)
+  created_at: string; // 등록일
 };

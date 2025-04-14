@@ -55,10 +55,10 @@ const FormWrapper = styled.div`
 // url
 const BASE_URL = "http://127.0.0.1:5000";
 const apiUrl = {
-  add: `${BASE_URL}/api/insertMainData`,
-  delete: `${BASE_URL}/api/deleteMainGridData`,
-  update: `${BASE_URL}/api/updateMainGridData`,
-  get: `${BASE_URL}/api/getDetailGridData`,
+  add: `${BASE_URL}/api/main/grid-row/add`,
+  delete: `${BASE_URL}/api/main/grid-row/delete`,
+  update: `${BASE_URL}/api/main/grid-data/update`,
+  get: `${BASE_URL}/api/main/grid-rows`,
 };
 
 function App() {
@@ -129,11 +129,11 @@ function App() {
     event.preventDefault();
     try {
       const dataObj = formDataToObj<TItemDetailObj>(event.currentTarget);
-      dataObj.id = uuidv4();
-      await postDataFetch(apiUrl.add, dataObj);
-
-      setRowData((v) => [...v, dataObj]);
       event.currentTarget.reset();
+      dataObj.id = uuidv4();
+      dataObj.created_by = "admin";
+      await postDataFetch(apiUrl.add, dataObj);
+      setRowData((v) => [...v, dataObj]);
     } catch (e) {
       console.error(e);
     }
@@ -177,7 +177,7 @@ function App() {
             rowData={rowData}
             columnDefs={colDefs}
             onCellValueChanged={(e) => {
-              cellValueChangeHandler(e, `${BASE_URL}/api/updateMainGridData`);
+              cellValueChangeHandler(e, apiUrl.update);
             }}
             onCellDoubleClicked={cellClickEvent}
           />

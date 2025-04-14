@@ -1,27 +1,19 @@
 from flask import Flask, send_from_directory, request, Response,jsonify,g
 from flask_cors import CORS
+from db import db
+from models import User,Item,Detail
 import os
 import sqlite3
+from datetime import datetime
+
 
 app = Flask(__name__, static_folder="../itemBox-project/dist")
 CORS(app,origins=["http://localhost:5173"])
 
-# DB 연결 시도
 
-DATABASE = './database.db'
-
-def get_db():
-    if 'db' not in g:
-        g.db = sqlite3.connect(DATABASE)
-        g.db.row_factory = sqlite3.Row
-    return g.db
-
-@app.teardown_appcontext
-def close_db(exception):
-    db = g.pop('db',None)
-    if db is not None:
-        db.close()
-
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+db.init_app(app)
 # build 파일
 @app.route('/')
 def serve_index():
@@ -39,207 +31,219 @@ def example_get():
 
 #################### Main 페이지 작업 ######################
 
-# [GET] /api/getDetailGridData 물품 정보가 담긴 배열 보내기 
-@app.route("/api/getDetailGridData", methods=["GET"])
-def get_detail_grid_data():
+# [GET] /api/main/grid-rows 물품 정보가 담긴 배열 보내기 
+@app.route("/api/main/grid-rows", methods=["GET"])
+def get_main_grid_data():
     try:
-        db = get_db()
-        cursor = db.execute("""
-            SELECT id, name, price, category, category_price,
-                wholesale_price, fee, purchase_quantity, sold_quantity,
-                release_date, purchase_date, sales_type, etc
-            FROM itemDB
-        """)
-        rows = cursor.fetchall()
-        return jsonify([dict(row) for row in rows]),200
+        items = Item.query.all()
+        result = [item.to_dict() for item in items]
+        return jsonify(result),200
     except Exception as e:
         print("DB오류",e)
         return jsonify({"error":"불러오는중중 오류발생"}),500
 
-# [POST] /api/deleteMainGridData 삭제
-@app.route("/api/deleteMainGridData",methods=["POST"])
-def delMainGridData():
+# [POST] /api/main/grid-row/delete 삭제
+@app.route("/api/main/grid-row/delete",methods=["POST"])
+def del_main_grid_data():
     data = request.get_json()
     try:
-        db = get_db()
-        db.execute("DELETE FROM itemDB WHERE id = ?",(data.get("id"),))
-        db.commit()
+        item_id = data.get("id")
+        item = Item.query.get(item_id)
+
+        if not item:
+            return jsonify({"error":"존재하지 않는 항목."})
+        
+        db.session.delete(item)
+        db.session.commit()
         return jsonify({"message":"Data remove successfully"}),200
     except Exception as e:
         print("DB오류",e)
         return jsonify({"error":"삭제중 오류발생"}),500
 
-# [POST] /api/insertMainGridData 등록
-@app.route("/api/insertMainData",methods=["POST"])
-def insert_grid_data():
+# [POST] /api/main/grid-row/add 등록
+@app.route("/api/main/grid-row/add",methods=["POST"])
+def insert_main_grid_data():
     data = request.get_json()
-    print(data)
     if not data:
         return jsonify({"error":"NoData provided-_-"}),400
 
-    try :
-        db = get_db();
-        db.execute("""
-            INSERT INTO itemDB (
-                id, name, price, category, category_price, wholesale_price, fee,
-                purchase_quantity, sold_quantity, release_date, purchase_date,
-                sales_type, etc
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            data["id"],
-            data["name"],
-            data["price"],
-            data["category"],
-            data["category_price"],
-            data["wholesale_price"],
-            data["fee"],
-            data["purchase_quantity"],
-            data["sold_quantity"],
-            data["release_date"],
-            data["purchase_date"],
-            data["sales_type"],
-            data["etc"]
-        ))
-        db.commit()
-        return jsonify({"message": "Data received successfully", "data": data}), 201
+    try:
+        item = Item(
+            id=data["id"],
+            name=data["name"],
+            price=data["price"],
+            category=data["category"],
+            category_price=data["category_price"],
+            wholesale_price=data["wholesale_price"],
+            fee=data["fee"],
+            purchase_quantity=data["purchase_quantity"],
+            sold_quantity=data["sold_quantity"],
+            release_date=data["release_date"],
+            purchase_date=data["purchase_date"],
+            sales_type=data["sales_type"],
+            etc=data["etc"],
+            created_by=data.get("created_by"),  # 추후 토큰
+            created_at=datetime.now()  # 현재 시각을 넣어야함. 나중에.
+        )
+
+        db.session.add(item)
+        db.session.commit()
+
+        return jsonify({"message": "Data inserted successfully", "data": item.to_dict()}), 201
     except Exception as e:
-        print(e)
+        db.session.rollback()
         return jsonify({"error":"what the"})
 
-
-
-
-# [POST] /api/editMainGridData 수정
-@app.route("/api/updateMainGridData", methods=["POST"])
+@app.route("/api/main/grid-data/update", methods=["POST"])
 def update_main_grid_data():
     data = request.get_json()
+    if not data or not data.get("id"):
+        return jsonify({"error": "ID 누락 또는 데이터 없음"}), 400
 
-    db = get_db()
-    db.execute("""
-        UPDATE itemDB SET
-            name = ?,
-            price = ?,
-            category = ?,
-            category_price = ?,
-            wholesale_price = ?,
-            fee = ?,
-            purchase_quantity = ?,
-            sold_quantity = ?,
-            release_date = ?,
-            purchase_date = ?,
-            sales_type = ?,
-            etc = ?
-        WHERE id = ?
-    """, (
-        data["name"],
-        data["price"],
-        data["category"],
-        data["category_price"],
-        data["wholesale_price"],
-        data["fee"],
-        data["purchase_quantity"],
-        data["sold_quantity"],
-        data["release_date"],
-        data["purchase_date"],
-        data["sales_type"],
-        data["etc"],
-        data["id"]
-    ))
-    db.commit()
-    return jsonify({"message": "Update success", "updated": data}), 200
+    try:
+        item = Item.query.get(data["id"])
+        if not item:
+            return jsonify({"error": "해당 ID의 데이터 없음"}), 404
+
+        # 필드 업데이트
+        item.name = data["name"]
+        item.price = data["price"]
+        item.category = data["category"]
+        item.category_price = data["category_price"]
+        item.wholesale_price = data["wholesale_price"]
+        item.fee = data["fee"]
+        item.purchase_quantity = data["purchase_quantity"]
+        item.sold_quantity = data["sold_quantity"]
+        item.release_date = data["release_date"]
+        item.purchase_date = data["purchase_date"]
+        item.sales_type = data["sales_type"]
+        item.etc = data["etc"]
+
+        db.session.commit()
+
+        return jsonify({"message": "Update success", "updated": item.to_dict()}), 200
+
+    except Exception as e:
+        print("DB 오류", e)
+        db.session.rollback()
+        return jsonify({"error": "업데이트 중 오류 발생"}), 500
 
 #################### Detail 페이지 작업 ######################
 
-# [POST] /api/editDetailGridData 데이터 변경
-@app.route("/api/editDetailGridData",methods=["POST"])
-def post_detailData():
+# [POST] /api/detail/grid-row/update 데이터 변경
+@app.route("/api/detail/grid-row/update", methods=["POST"])
+def update_detail_data():
     data = request.get_json()
-    if not data: 
-        return jsonify({"error":"NoData provided-_-"}),400
-    
-    db = get_db();
-    db.execute(
-        """
-            UPDATE detailDB
-            SET customerName = ?, customerAddress = ?, platform = ?, payment = ?, etc = ?
-            WHERE id = ?
-        """,(
-            data.get("customerName"),
-            data.get("customerAddress"),
-            data.get("platform"),
-            data.get("payment"),
-            data.get("etc"),
-            data.get("id")
-        )
-    )
-    db.commit()
-    return jsonify({"message": "Data Update successfully"}), 200
+    if not data or not data.get("id"):
+        return jsonify({"error": "No data or ID missing"}), 400
+
+    try:
+        detail = Detail.query.get(data["id"])
+        if not detail:
+            return jsonify({"error": "해당 ID의 데이터 없음"}), 404
+
+        # 필드 업데이트
+        detail.customerName = data.get("customerName")
+        detail.customerAddress = data.get("customerAddress")
+        detail.platform = data.get("platform")
+        detail.payment = data.get("payment")
+        detail.etc = data.get("etc")
+
+        db.session.commit()
+        return jsonify({"message": "Data updated successfully"}), 200
+
+    except Exception as e:
+        print("DB 오류", e)
+        db.session.rollback()
+        return jsonify({"error": "업데이트 중 오류 발생"}), 500
 
 # [POST] /api/insertDetailData 사용자에게 값을 받아 등록.
-@app.route("/api/insertDetailData", methods=["POST"])
-def post_data():
-
+@app.route("/api/detail/grid-row/add", methods=["POST"])
+def add_detail_data():
     data = request.get_json()
 
-    db = get_db();
-    db.execute(
-        '''
-        INSERT INTO detailDB
-        (id, customerName, customerAddress, platform, payment, etc, itemId) 
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-        ''',
-        (
-            data["id"],
-            data["customerName"],
-            data["customerAddress"],
-            data["platform"],
-            data["payment"],
-            data["etc"],
-            data["itemId"]
-         )
-    )
-    db.commit()
     if not data:
-        return jsonify({"error":"NoData provided-_-"}),400
-    return jsonify({"message": "Data received successfully", "data": data}), 201
+        return jsonify({"error": "No data provided"}), 400
+
+    try:
+        detail = Detail(
+            id=data["id"],
+            customerName=data["customerName"],
+            customerAddress=data["customerAddress"],
+            platform=data["platform"],
+            payment=data["payment"],
+            etc=data["etc"],
+            ItemId=data["itemId"]
+        )
+
+        db.session.add(detail)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Data received successfully",
+        }), 201
+
+    except Exception as e:
+        print("DB 오류:", e)
+        db.session.rollback()
+        return jsonify({"error": "등록 중 오류 발생"}), 500
 
 # [POST] /api/deleteDetailData 삭제
-@app.route("/api/deleteDetailGridData",methods=["POST"])
-def deleteDetailGridData():
+@app.route("/api/detail/grid-row/delete", methods=["POST"])
+def delete_detail_grid_data():
     data = request.get_json()
+
+    if not data or not data.get("id"):
+        return jsonify({"error": "ID 누락"}), 400
+
     try:
-        db = get_db()
-        db.execute("DELETE FROM detailDB WHERE id = ?",(data.get("id"),))
-        db.commit()
-        return jsonify({"message":"Data remove successfully"}),200
+        detail = Detail.query.get(data["id"])
+        if not detail:
+            return jsonify({"error": "해당 데이터 없음"}), 404
+
+        db.session.delete(detail)
+        db.session.commit()
+
+        return jsonify({"message": "ok"}), 200
+
     except Exception as e:
-        print("DB오류",e)
-        return jsonify({"error":"삭제중 오류발생"}),500
+        print("DB 오류:", e)
+        db.session.rollback()
+        return jsonify({"error": "삭제 중 오류 발생"}), 500
 
 
 # [GET] /api/getDetailGridData/<item_id> 해당 아이디의 정보 가져오기
-@app.route("/api/getDetailGridData/<item_id>",methods=["GET"])
-def getDetailGridData(item_id):
-    db = get_db()
-    cursor = db.execute("SELECT * FROM detailDB WHERE itemId = ?",(item_id,))
-    rows = cursor.fetchall()
-    return jsonify([dict(row) for row in rows]),200
+@app.route("/api/detail/grid-rows/<item_id>", methods=["GET"])
+def get_detail_grid_data(item_id):
+    try:
+        details = Detail.query.filter_by(ItemId=item_id).all()
+        result = [d.to_dict() for d in details]
 
-if __name__ == "__main__":
-    app.run(debug=True,port=5000)
+        return jsonify(result), 200
+
+    except Exception as e:
+        print("DB 오류:", e)
+        return jsonify({"error": "조회 중 오류 발생"}), 500
+
 
 # [GET] /api/getDetailInfo/<item_id> 해당 아이디의 정보 가져오기
-@app.route("/api/getDetailInfo/<item_id>",methods=["GET"])
-def getDetailInfo(item_id):
+@app.route("/api/detail/<item_id>", methods=["GET"])
+def get_detail_info(item_id):
     try:
-        db = get_db()
-        cursor = db.execute("SELECT * FROM itemDB WHERE id = ?", (item_id,))
-        row = cursor.fetchone()
+        item = Item.query.get(item_id)
 
-        if row is None:
-            return jsonify({"error":"데이터를 못찾겠다!"})
-        
-        return jsonify(dict(row)),200
+        if item is None:
+            return jsonify({"error": "데이터를 못 찾겠다!"}), 404
+
+        return jsonify(
+            item.to_dict()
+        ), 200
+
     except Exception as e:
-        return jsonify({"error":"서버오류"}),500
+        print("DB 오류:", e)
+        return jsonify({"error": "서버 오류"}), 500
     
+if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True,port=5000)

@@ -84,10 +84,11 @@ const BASE_URL = "http://127.0.0.1:5000";
 
 //URL OBJECT
 const apiUrlObj = {
-  add: `${BASE_URL}/api/insertDetailData`,
-  update: `${BASE_URL}/api/editDetailGridData`,
-  delete: `${BASE_URL}/api/deleteDetailGridData`,
-  get: (id: string) => `${BASE_URL}/api/getDetailGridData/${id}`,
+  add: `${BASE_URL}/api/detail/grid-row/add`,
+  update: `${BASE_URL}/api/detail/grid-row/update`,
+  delete: `${BASE_URL}/api/detail/grid-row/delete`,
+  get: (id: string) => `${BASE_URL}/api/detail/grid-rows/${id}`,
+  getInfo: (id: string) => `${BASE_URL}/api/detail/${id}`,
 };
 
 // 타입
@@ -120,14 +121,15 @@ function Detail() {
     { field: "etc", headerName: "비고", editable: true },
   ]);
   const fetchDetailInfo = async () => {
-    const res = await fetch(`${BASE_URL}/api/getDetailInfo/${paramId}`);
+    if (!paramId) return;
+    const res = await fetch(apiUrlObj.getInfo(paramId));
     return res.json();
   };
 
   useEffect(() => {
     const fetchData = async () => {
       const result = await fetchDetailInfo();
-      setDetailInfo((prev) => (prev = result));
+      setDetailInfo(result);
     };
     fetchData();
   }, []);

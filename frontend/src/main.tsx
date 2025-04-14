@@ -1,13 +1,13 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
+import Home from "./Home.tsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Detail from "./routes/Detail.tsx";
+import Detail from "./Pages/Detail.tsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <Home />,
   },
   {
     path: "/detail/:paramId",

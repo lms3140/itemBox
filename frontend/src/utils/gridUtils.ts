@@ -1,6 +1,6 @@
 import { AgGridReact } from "ag-grid-react";
 import { getDataFetch, postDataFetch } from "./utils";
-import { CellValueChangedEvent, GridReadyEvent } from "ag-grid-community";
+import { CellValueChangedEvent } from "ag-grid-community";
 import { Dispatch, SetStateAction } from "react";
 
 /**

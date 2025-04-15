@@ -92,7 +92,7 @@ def insert_main_grid_data():
         return jsonify({"message": "Data inserted successfully", "data": item.to_dict()}), 201
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error":"what the"})
+        return jsonify({"error":"what the"}),500
 
 @app.route("/api/main/grid-data/update", methods=["POST"])
 def update_main_grid_data():
@@ -157,7 +157,7 @@ def update_detail_data():
         db.session.rollback()
         return jsonify({"error": "업데이트 중 오류 발생"}), 500
 
-# [POST] /api/insertDetailData 사용자에게 값을 받아 등록.
+# [POST] /api/detail/grid-row/add 사용자에게 값을 받아 등록.
 @app.route("/api/detail/grid-row/add", methods=["POST"])
 def add_detail_data():
     data = request.get_json()
@@ -181,6 +181,7 @@ def add_detail_data():
 
         return jsonify({
             "message": "Data received successfully",
+            "data": detail.to_dict()
         }), 201
 
     except Exception as e:
@@ -188,7 +189,7 @@ def add_detail_data():
         db.session.rollback()
         return jsonify({"error": "등록 중 오류 발생"}), 500
 
-# [POST] /api/deleteDetailData 삭제
+# [POST] /api/detail/grid-row/delete 삭제
 @app.route("/api/detail/grid-row/delete", methods=["POST"])
 def delete_detail_grid_data():
     data = request.get_json()
@@ -226,7 +227,7 @@ def get_detail_grid_data(item_id):
         return jsonify({"error": "조회 중 오류 발생"}), 500
 
 
-# [GET] /api/getDetailInfo/<item_id> 해당 아이디의 정보 가져오기
+# [GET] /api/detail/<item_id> 해당 아이디의 정보 가져오기
 @app.route("/api/detail/<item_id>", methods=["GET"])
 def get_detail_info(item_id):
     try:

@@ -19,6 +19,7 @@ import {
   loadGridData,
 } from "../utils/gridUtils";
 import InputLabel from "../components/InputLabel";
+import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 
 // styledComponents
 
@@ -102,6 +103,14 @@ type TColItem = {
   itemId: string;
 };
 
+type TDetailFormData = {
+  customerName: string;
+  platform: string;
+  payment: string;
+  customerAddress: string;
+  etc: string;
+};
+
 function Detail() {
   const { paramId } = useParams();
   const gridRef = useRef<AgGridReact<TColItem>>(null);
@@ -120,6 +129,9 @@ function Detail() {
     { field: "platform", headerName: "판매플랫폼", editable: true },
     { field: "etc", headerName: "비고", editable: true },
   ]);
+
+  const { register, handleSubmit, reset } = useForm<TDetailFormData>();
+
   const fetchDetailInfo = async () => {
     if (!paramId) return;
     const res = await fetch(apiUrlObj.getInfo(paramId));
@@ -145,19 +157,31 @@ function Detail() {
   };
 
   // submit 함수
-  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  // const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  //   event.preventDefault();
+  //   if (!paramId) return;
+  //   try {
+  //     const dataObj = formDataToObj<TColItem>(event.currentTarget);
+  //     dataObj.id = uuidv4();
+  //     dataObj.itemId = paramId;
+
+  //     await postDataFetch(apiUrlObj.add, dataObj);
+  //     setRowData((v) => [...v, dataObj]);
+  //     event.currentTarget.reset();
+  //   } catch (e) {
+  //     console.error(e);
+  //   }
+  // };
+
+  const onSubmit: SubmitHandler<TDetailFormData> = async (data) => {
     if (!paramId) return;
     try {
-      const dataObj = formDataToObj<TColItem>(event.currentTarget);
-      dataObj.id = uuidv4();
-      dataObj.itemId = paramId;
-
-      await postDataFetch(apiUrlObj.add, dataObj);
-      setRowData((v) => [...v, dataObj]);
-      event.currentTarget.reset();
+      const newData: TColItem = { id: uuidv4(), itemId: paramId, ...data };
+      const result = await postDataFetch(apiUrlObj.add, newData);
+      setRowData((v) => [...v, result.data]);
+      reset();
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   };
 
@@ -186,28 +210,17 @@ function Detail() {
         </InfoWrapper>
 
         <ListFormWrapper>
-          <ListForm onSubmit={onSubmit}>
-            <InputLabel
-              label="주문자"
-              name="customerName"
-              placeholder="주문자"
-            />
-            <InputLabel
-              label="주소"
-              name="customerAddress"
-              placeholder="주소"
-            />
-            <InputLabel
-              label="결제금액"
-              name="payment"
-              placeholder="결제금액"
-            />
-            <InputLabel
-              label="판매 플랫폼"
-              name="platform"
-              placeholder="판매플랫폼"
-            />
-            <InputLabel label="비고" name="etc" placeholder="비고" />
+          <ListForm onSubmit={handleSubmit(onSubmit)}>
+            <label htmlFor="">주문자</label>
+            <input {...register("customerName", { required: true })} />
+            <label htmlFor="">주소</label>
+            <input {...register("customerAddress", { required: true })} />
+            <label htmlFor="">결제금액</label>
+            <input {...register("payment", { required: true })} />
+            <label htmlFor="">판매 플랫폼</label>
+            <input {...register("platform", { required: true })} />
+            <label htmlFor="">비고</label>
+            <input {...register("etc")} />
             <button>등록</button>
           </ListForm>
         </ListFormWrapper>

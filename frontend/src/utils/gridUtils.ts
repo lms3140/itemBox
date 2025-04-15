@@ -60,7 +60,7 @@ export const cellValueChangeHandler = async <T extends { id: string }>(
     console.log(result);
   } catch (error) {
     if (!colField) {
-      console.warn("[cellValueChangeHandler] 에러! colField가 없다고???");
+      console.warn("[cellValueChangeHandler] colField 없음");
       return;
     }
     // cell 수정

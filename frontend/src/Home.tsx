@@ -12,7 +12,7 @@ import {
   type ColDef,
 } from "ag-grid-community";
 import styled from "styled-components";
-import { TItemDetailObj } from "./type";
+import { TItemDetailFormData, TItemDetailObj } from "./type";
 import { Link, useNavigate } from "react-router-dom";
 import { formDataToObj, postDataFetch } from "./utils/utils";
 import {
@@ -20,7 +20,7 @@ import {
   deleteRowFunc,
   loadGridData,
 } from "./utils/gridUtils";
-import InputLabel from "./components/InputLabel";
+import { SubmitHandler, useForm } from "react-hook-form";
 
 //agGrid를 사용하기 위한 설정... 이게 뭔지는 제대로 모르겠음
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -124,6 +124,7 @@ function App() {
   // 데이터
   const [rowData, setRowData] = useState<TItemDetailObj[]>([]);
   const gridRef = useRef<AgGridReact<TItemDetailObj>>(null);
+  const { register, handleSubmit, reset } = useForm<TItemDetailFormData>();
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -134,6 +135,23 @@ function App() {
       dataObj.created_by = "admin";
       await postDataFetch(apiUrl.add, dataObj);
       setRowData((v) => [...v, dataObj]);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const onSubmit: SubmitHandler<TItemDetailFormData> = async (
+    data: TItemDetailFormData
+  ) => {
+    try {
+      const newObj: TItemDetailObj = {
+        ...data,
+        id: uuidv4(),
+        created_by: "admin",
+      };
+      const result = await postDataFetch(apiUrl.add, newObj);
+      setRowData((v) => [...v, result.data]);
+      reset();
     } catch (e) {
       console.error(e);
     }
@@ -184,88 +202,34 @@ function App() {
         </GridWrapper>
         <SideMenu>
           <FormWrapper>
-            <form action="" onSubmit={submit}>
-              <InputLabel
-                label="이름"
-                name="name"
-                placeholder="이름"
-                type="text"
-                required={true}
-              />
-              <InputLabel
-                label="판매 가격"
-                name="price"
-                placeholder="가격"
-                type="text"
-                required={true}
-              />
-              <InputLabel
-                label="카테고리"
-                name="category"
-                placeholder="카테고리"
-                type="text"
-                required={true}
-              />
-              <InputLabel
-                label="도매가"
-                name="wholesale_price"
-                placeholder="도매가"
-                type="text"
-                required={true}
-              />
-              <InputLabel
-                label="소비자권장가격"
-                name="category_price"
-                placeholder="소비자권장가격"
-                type="text"
-                required={true}
-              />
-
-              <InputLabel
-                label="수수료"
-                name="fee"
-                placeholder="수수료"
-                type="text"
-                required={true}
-              />
-              <InputLabel
-                label="구매개수"
-                name="purchase_quantity"
-                placeholder="구매개수"
-                type="text"
-                required={true}
-              />
-              <InputLabel
-                label="판매개수"
-                name="sold_quantity"
-                placeholder="판매개수"
-                type="text"
-                required={true}
-              />
-              <InputLabel
-                label="발매날짜"
-                name="release_date"
-                placeholder="발매날짜"
+            <form action="" onSubmit={handleSubmit(onSubmit)}>
+              <label>이름</label>
+              <input {...register("name", { required: true })} />
+              <label>판매가격</label>
+              <input {...register("price", { required: true })} />
+              <label>카테고리</label>
+              <input {...register("category", { required: true })} />
+              <label>도매가</label>
+              <input {...register("wholesale_price", { required: true })} />
+              <label>소비자권장가격</label>
+              <input {...register("category_price", { required: true })} />
+              <label>수수료</label>
+              <input {...register("fee", { required: true })} />
+              <label>구매개수</label>
+              <input {...register("purchase_quantity", { required: true })} />
+              <label>판매개수</label>
+              <input {...register("sold_quantity", { required: true })} />
+              <label>발매날짜</label>
+              <input
                 type="date"
+                {...register("release_date", { required: true })}
               />
-              <InputLabel
-                label="구매날짜"
-                name="purchase_date"
-                placeholder="구매날짜"
-                type="date"
-              />
-              <InputLabel
-                label="판매유형"
-                name="sales_type"
-                placeholder="판매유형"
-                type="text"
-              />
-              <InputLabel
-                label="비고"
-                name="etc"
-                placeholder="비고"
-                type="text"
-              />
+              <label>구매날짜</label>
+              <input type="date" {...register("purchase_date")} />
+              <label>판매유형</label>
+              <input {...register("sales_type", { required: true })} />
+              <label>비고</label>
+              <input {...register("etc")} />
               <button type="submit">등록</button>
               <button
                 type="button"

@@ -2,6 +2,7 @@ import { AgGridReact } from "ag-grid-react";
 import { getDataFetch, postDataFetch } from "./utils";
 import { CellValueChangedEvent } from "ag-grid-community";
 import { Dispatch, SetStateAction } from "react";
+import { toastError, TOASTMESSAGE, toastSuccess } from "./toastUtils";
 
 /**
  * "AG Grid"에서 하나의 행을 삭제하기 위한 함수
@@ -32,8 +33,10 @@ export const deleteRowFunc = async <T extends { id: string }>(
     const result = await postDataFetch(apiUrl, { id: selectedId });
     console.log(result);
     setData((prev) => prev.filter((rows) => rows.id !== selectedId));
+    toastSuccess(TOASTMESSAGE.SUCCESS_DELETE);
   } catch (e) {
     console.error(e);
+    toastError(TOASTMESSAGE.ERROR_DELETE);
   }
 };
 
@@ -56,9 +59,9 @@ export const cellValueChangeHandler = async <T extends { id: string }>(
   const { oldValue, data } = e;
   const colField = e.column.getColDef().field;
   try {
-    const result = await postDataFetch(url, data);
-    console.log(result);
+    await postDataFetch(url, data);
   } catch (error) {
+    toastError(TOASTMESSAGE.ERROR_UPDATE);
     if (!colField) {
       console.warn("[cellValueChangeHandler] colField 없음");
       return;
@@ -71,15 +74,15 @@ export const cellValueChangeHandler = async <T extends { id: string }>(
     e.api.refreshCells({ rowNodes: [e.node], columns: [colField] });
   }
 };
-
+/**
+ *
+ * @param url 그리드 데이터를 불러오는 URL
+ * @param setRowData setState의 set 함수
+ */
 export const loadGridData = async <T>(
   url: string,
   setRowData: Dispatch<SetStateAction<T[]>>
 ) => {
-  try {
-    const res = (await getDataFetch(url)) as T[];
-    setRowData((prev) => [...prev, ...res]);
-  } catch (e) {
-    throw e;
-  }
+  const res = (await getDataFetch(url)) as T[];
+  setRowData((prev) => [...prev, ...res]);
 };

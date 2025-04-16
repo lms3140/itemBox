@@ -1,22 +1,14 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import Home from "./Home.tsx";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Detail from "./Pages/Detail.tsx";
-
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Home />,
-  },
-  {
-    path: "/detail/:paramId",
-    element: <Detail />,
-  },
-]);
+import { RouterProvider } from "react-router-dom";
+import { ThemeProvider } from "styled-components";
+import { router } from "./routes.tsx";
+import { darkTheme } from "./theme.ts";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <ThemeProvider theme={darkTheme}>
+      <RouterProvider router={router} />
+    </ThemeProvider>
   </StrictMode>
 );

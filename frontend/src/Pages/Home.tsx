@@ -3,24 +3,28 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import {
   AllCommunityModule,
-  CellClickedEvent,
   CellDoubleClickedEvent,
-  CellValueChangedEvent,
   GridReadyEvent,
   ModuleRegistry,
   RowSelectionOptions,
   type ColDef,
 } from "ag-grid-community";
 import styled from "styled-components";
-import { TItemDetailFormData, TItemDetailObj } from "./type";
-import { Link, useNavigate } from "react-router-dom";
-import { formDataToObj, postDataFetch } from "./utils/utils";
+import { TItemDetailFormData, TItemDetailObj } from "../type";
+import { useNavigate } from "react-router-dom";
+import { postDataFetch } from "../utils/utils";
 import {
   cellValueChangeHandler,
   deleteRowFunc,
   loadGridData,
-} from "./utils/gridUtils";
+} from "../utils/gridUtils";
 import { SubmitHandler, useForm } from "react-hook-form";
+import {
+  toastError,
+  toastInfo,
+  TOASTMESSAGE,
+  toastSuccess,
+} from "../utils/toastUtils";
 
 //agGrid를 사용하기 위한 설정... 이게 뭔지는 제대로 모르겠음
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -61,9 +65,11 @@ const apiUrl = {
   get: `${BASE_URL}/api/main/grid-rows`,
 };
 
-function App() {
+function Home() {
   const navigate = useNavigate();
-
+  useEffect(() => {
+    toastInfo("한번 테스트 해볼까요??");
+  }, []);
   // 표 머리글
   const [colDefs, _] = useState<ColDef<TItemDetailObj>[]>([
     { field: "id", maxWidth: 70, hide: true },
@@ -126,20 +132,6 @@ function App() {
   const gridRef = useRef<AgGridReact<TItemDetailObj>>(null);
   const { register, handleSubmit, reset } = useForm<TItemDetailFormData>();
 
-  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    try {
-      const dataObj = formDataToObj<TItemDetailObj>(event.currentTarget);
-      event.currentTarget.reset();
-      dataObj.id = uuidv4();
-      dataObj.created_by = "admin";
-      await postDataFetch(apiUrl.add, dataObj);
-      setRowData((v) => [...v, dataObj]);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
   const onSubmit: SubmitHandler<TItemDetailFormData> = async (
     data: TItemDetailFormData
   ) => {
@@ -152,8 +144,9 @@ function App() {
       const result = await postDataFetch(apiUrl.add, newObj);
       setRowData((v) => [...v, result.data]);
       reset();
+      toastSuccess(TOASTMESSAGE.SUCCESS_ADD);
     } catch (e) {
-      console.error(e);
+      toastError(TOASTMESSAGE.ERROR_ADD);
     }
   };
 
@@ -169,7 +162,6 @@ function App() {
   ) => {
     if (!event.data) return;
     const { id } = event.data;
-
     navigate(`/detail/${id}`);
   };
 
@@ -179,7 +171,7 @@ function App() {
     try {
       await loadGridData(apiUrl.get, setRowData);
     } catch (e) {
-      console.error(e);
+      toastError(TOASTMESSAGE.ERROR_GET);
     }
   };
 
@@ -241,11 +233,10 @@ function App() {
               </button>
             </form>
           </FormWrapper>
-          <div></div>
         </SideMenu>
       </Wrapper>
     </>
   );
 }
 
-export default App;
+export default Home;

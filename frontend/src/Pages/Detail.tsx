@@ -1,25 +1,23 @@
-import { useParams } from "react-router";
-import { TItemDetailObj } from "../type";
-import styled from "styled-components";
-import InfoItem from "../components/InfoItem";
-import { AgGridReact } from "ag-grid-react";
-import { v4 as uuidv4 } from "uuid";
 import {
-  CellValueChangedEvent,
   GridReadyEvent,
-  RowSelectionMode,
   RowSelectionOptions,
   type ColDef,
 } from "ag-grid-community";
+import { AgGridReact } from "ag-grid-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { formDataToObj, getDataFetch, postDataFetch } from "../utils/utils";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { useParams } from "react-router";
+import styled from "styled-components";
+import { v4 as uuidv4 } from "uuid";
+import InfoItem from "../components/InfoItem";
+import { TItemDetailObj } from "../type";
 import {
   cellValueChangeHandler,
   deleteRowFunc,
   loadGridData,
 } from "../utils/gridUtils";
-import InputLabel from "../components/InputLabel";
-import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
+import { toastError, toastSuccess } from "../utils/toastUtils";
+import { getDataFetch, postDataFetch } from "../utils/utils";
 
 // styledComponents
 
@@ -134,14 +132,18 @@ function Detail() {
 
   const fetchDetailInfo = async () => {
     if (!paramId) return;
-    const res = await fetch(apiUrlObj.getInfo(paramId));
+    const res = await getDataFetch(apiUrlObj.getInfo(paramId));
     return res.json();
   };
 
   useEffect(() => {
     const fetchData = async () => {
-      const result = await fetchDetailInfo();
-      setDetailInfo(result);
+      try {
+        const result = await fetchDetailInfo();
+        setDetailInfo(result);
+      } catch (e) {
+        toastError("데이터를 불러오는중 오류가 발생했습니다.");
+      }
     };
     fetchData();
   }, []);
@@ -152,26 +154,9 @@ function Detail() {
     try {
       await loadGridData(apiUrlObj.get(paramId), setRowData);
     } catch (e) {
-      console.error(e);
+      toastError("데이터를 불러오는 중 오류가 발생했습니다.");
     }
   };
-
-  // submit 함수
-  // const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-  //   event.preventDefault();
-  //   if (!paramId) return;
-  //   try {
-  //     const dataObj = formDataToObj<TColItem>(event.currentTarget);
-  //     dataObj.id = uuidv4();
-  //     dataObj.itemId = paramId;
-
-  //     await postDataFetch(apiUrlObj.add, dataObj);
-  //     setRowData((v) => [...v, dataObj]);
-  //     event.currentTarget.reset();
-  //   } catch (e) {
-  //     console.error(e);
-  //   }
-  // };
 
   const onSubmit: SubmitHandler<TDetailFormData> = async (data) => {
     if (!paramId) return;
@@ -180,8 +165,9 @@ function Detail() {
       const result = await postDataFetch(apiUrlObj.add, newData);
       setRowData((v) => [...v, result.data]);
       reset();
+      toastSuccess("등록을 완료했습니다.");
     } catch (e) {
-      console.log(e);
+      toastError("등록 작업중 오류가 발생했습니다.");
     }
   };
 

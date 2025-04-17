@@ -1,3 +1,4 @@
+// Main의 아이템 등록에 쓰는 타입
 export type TItemDetailObj = {
   id: string;
   name: string; // 이름
@@ -16,6 +17,7 @@ export type TItemDetailObj = {
   created_at?: string; // 등록일
 };
 
+// formData 통신에 필요한 타입
 export type TItemDetailFormData = {
   name: string; // 이름
   price: string; // 실제 가격
@@ -29,4 +31,10 @@ export type TItemDetailFormData = {
   release_date: string; // 발매날짜
   sales_type: string; // 판매유형
   etc: string; // 비고
+};
+
+// 음... 나중에 하기
+export type TResult = {
+  message: string;
+  data: string;
 };

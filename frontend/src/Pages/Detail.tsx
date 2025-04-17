@@ -28,7 +28,7 @@ const Wrapper = styled.div`
   flex-direction: column;
 `;
 const InfoWrapper = styled.div`
-  background-color: wheat;
+  background-color: #f5deb3;
   height: 300px;
   max-width: 500px;
   width: 100%;

@@ -6,7 +6,10 @@ import {
   CellDoubleClickedEvent,
   GridReadyEvent,
   ModuleRegistry,
+  provideGlobalGridOptions,
   RowSelectionOptions,
+  themeAlpine,
+  themeQuartz,
   type ColDef,
 } from "ag-grid-community";
 import styled from "styled-components";
@@ -25,6 +28,10 @@ import {
   TOASTMESSAGE,
   toastSuccess,
 } from "../utils/toastUtils";
+
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
+import CustomButton from "../components/CustomButton";
 
 //agGrid를 사용하기 위한 설정... 이게 뭔지는 제대로 모르겠음
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -180,6 +187,8 @@ function Home() {
       <Wrapper>
         <GridWrapper style={{ height: 500, width: 500 }}>
           <AgGridReact
+            theme="legacy"
+            className="ag-theme-alpine-dark"
             ref={gridRef}
             onGridReady={gridReady}
             rowSelection={rowSelection}
@@ -222,15 +231,23 @@ function Home() {
               <input {...register("sales_type", { required: true })} />
               <label>비고</label>
               <input {...register("etc")} />
-              <button type="submit">등록</button>
-              <button
-                type="button"
-                onClick={() => {
-                  deleteRowFunc(apiUrl.delete, gridRef, setRowData);
+              <div
+                style={{
+                  display: "flex",
+                  gap: "20px",
+                  justifyContent: "center",
                 }}
               >
-                삭제
-              </button>
+                <CustomButton type="submit">등록</CustomButton>
+                <CustomButton
+                  onClick={() => {
+                    deleteRowFunc(apiUrl.delete, gridRef, setRowData);
+                  }}
+                  variant="danger"
+                >
+                  삭제
+                </CustomButton>
+              </div>
             </form>
           </FormWrapper>
         </SideMenu>

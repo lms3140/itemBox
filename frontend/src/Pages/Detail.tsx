@@ -18,6 +18,7 @@ import {
 } from "../utils/gridUtils";
 import { toastError, toastSuccess } from "../utils/toastUtils";
 import { getDataFetch, postDataFetch } from "../utils/utils";
+import CustomButton from "../components/CustomButton";
 
 // styledComponents
 
@@ -26,9 +27,13 @@ const Wrapper = styled.div`
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  h1 {
+    font-size: 44px;
+    margin-bottom: 20px;
+  }
 `;
 const InfoWrapper = styled.div`
-  background-color: #f5deb3;
+  background-color: ${(props) => props.theme.colors.bg};
   height: 300px;
   max-width: 500px;
   width: 100%;
@@ -44,8 +49,9 @@ const InfoWrapper = styled.div`
 const ListFormWrapper = styled.div`
   margin-top: 5px;
   border-radius: 5px;
+  border: 1px solid ${(props) => props.theme.colors.border};
   width: 500px;
-  background-color: aliceblue;
+  background-color: ${(props) => props.theme.colors.bg};
   padding: 5px 4px 10px 4px;
   margin-bottom: 10px;
   box-sizing: border-box;
@@ -60,22 +66,14 @@ const ListForm = styled.form`
   }
 
   input {
-    border: 1px solid #ccc;
+    border: 1px solid ${({ theme }) => theme.colors.border};
     padding: 10px;
+    border-radius: 5px;
   }
 
   label {
     display: block;
     margin-bottom: 5px;
-  }
-  button {
-    grid-column: span 2;
-    border: #ccc 1px solid;
-    border-radius: 5px;
-    width: 300px;
-    justify-self: center;
-    cursor: pointer;
-    margin-top: 20px;
   }
 `;
 
@@ -133,7 +131,7 @@ function Detail() {
   const fetchDetailInfo = async () => {
     if (!paramId) return;
     const res = await getDataFetch(apiUrlObj.getInfo(paramId));
-    return res.json();
+    return res;
   };
 
   useEffect(() => {
@@ -142,6 +140,7 @@ function Detail() {
         const result = await fetchDetailInfo();
         setDetailInfo(result);
       } catch (e) {
+        console.log(e);
         toastError("데이터를 불러오는중 오류가 발생했습니다.");
       }
     };
@@ -198,30 +197,49 @@ function Detail() {
         <ListFormWrapper>
           <ListForm onSubmit={handleSubmit(onSubmit)}>
             <label htmlFor="">주문자</label>
-            <input {...register("customerName", { required: true })} />
+            <input
+              placeholder="주문자"
+              {...register("customerName", { required: true })}
+            />
             <label htmlFor="">주소</label>
-            <input {...register("customerAddress", { required: true })} />
+            <input
+              placeholder="주소"
+              {...register("customerAddress", { required: true })}
+            />
             <label htmlFor="">결제금액</label>
-            <input {...register("payment", { required: true })} />
+            <input
+              placeholder="결제금액"
+              {...register("payment", { required: true })}
+            />
             <label htmlFor="">판매 플랫폼</label>
-            <input {...register("platform", { required: true })} />
+            <input
+              placeholder="판매 플랫폼"
+              {...register("platform", { required: true })}
+            />
             <label htmlFor="">비고</label>
-            <input {...register("etc")} />
-            <button>등록</button>
+            <input placeholder="비고" {...register("etc")} />
+            <div>
+              <CustomButton type="submit" variant="primary">
+                등록
+              </CustomButton>
+            </div>
           </ListForm>
         </ListFormWrapper>
 
         <div style={{ width: 800, height: 500 }}>
           <div>
-            <button
+            <CustomButton
+              variant="danger"
               onClick={() => {
                 deleteRowFunc(apiUrlObj.delete, gridRef, setRowData);
               }}
             >
               삭제
-            </button>
+            </CustomButton>
           </div>
           <AgGridReact
+            theme="legacy"
+            className="ag-theme-alpine-dark"
             ref={gridRef}
             getRowId={(p) => p.data.id}
             rowSelection={rowSelection}

@@ -56,8 +56,8 @@ const SideMenu = styled.div`
 
 const FormWrapper = styled.div`
   padding: 7px;
-  border: 1px solid #ddd;
-  border-radius: 5%;
+  border: 2px solid #ddd;
+  border-radius: 5px;
   box-sizing: border-box;
 `;
 
@@ -205,21 +205,45 @@ function Home() {
           <FormWrapper>
             <form action="" onSubmit={handleSubmit(onSubmit)}>
               <label>이름</label>
-              <input {...register("name", { required: true })} />
+              <input
+                placeholder="이름"
+                {...register("name", { required: true })}
+              />
               <label>판매가격</label>
-              <input {...register("price", { required: true })} />
+              <input
+                placeholder="판매가격"
+                {...register("price", { required: true })}
+              />
               <label>카테고리</label>
-              <input {...register("category", { required: true })} />
+              <input
+                placeholder="카테고리"
+                {...register("category", { required: true })}
+              />
               <label>도매가</label>
-              <input {...register("wholesale_price", { required: true })} />
+              <input
+                placeholder="도매가"
+                {...register("wholesale_price", { required: true })}
+              />
               <label>소비자권장가격</label>
-              <input {...register("category_price", { required: true })} />
+              <input
+                placeholder="소비자권장가격"
+                {...register("category_price", { required: true })}
+              />
               <label>수수료</label>
-              <input {...register("fee", { required: true })} />
+              <input
+                placeholder="수수료"
+                {...register("fee", { required: true })}
+              />
               <label>구매개수</label>
-              <input {...register("purchase_quantity", { required: true })} />
+              <input
+                placeholder="구매개수"
+                {...register("purchase_quantity", { required: true })}
+              />
               <label>판매개수</label>
-              <input {...register("sold_quantity", { required: true })} />
+              <input
+                placeholder="판매개수"
+                {...register("sold_quantity", { required: true })}
+              />
               <label>발매날짜</label>
               <input
                 type="date"
@@ -228,9 +252,12 @@ function Home() {
               <label>구매날짜</label>
               <input type="date" {...register("purchase_date")} />
               <label>판매유형</label>
-              <input {...register("sales_type", { required: true })} />
+              <input
+                placeholder="판매유형"
+                {...register("sales_type", { required: true })}
+              />
               <label>비고</label>
-              <input {...register("etc")} />
+              <input placeholder="비고" {...register("etc")} />
               <div
                 style={{
                   display: "flex",
@@ -238,7 +265,9 @@ function Home() {
                   justifyContent: "center",
                 }}
               >
-                <CustomButton type="submit">등록</CustomButton>
+                <CustomButton variant="primary" type="submit">
+                  등록
+                </CustomButton>
                 <CustomButton
                   onClick={() => {
                     deleteRowFunc(apiUrl.delete, gridRef, setRowData);

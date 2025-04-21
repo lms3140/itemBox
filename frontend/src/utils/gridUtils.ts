@@ -62,6 +62,7 @@ export const cellValueChangeHandler = async <T extends { id: string }>(
     await postDataFetch(url, data);
   } catch (error) {
     toastError(TOASTMESSAGE.ERROR_UPDATE);
+    console.log(error);
     if (!colField) {
       console.warn("[cellValueChangeHandler] colField 없음");
       return;

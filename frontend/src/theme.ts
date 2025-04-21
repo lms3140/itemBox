@@ -11,7 +11,7 @@ export const darkTheme: DefaultTheme = {
     variant: {
       danger: "red",
       normal: "#3F4454",
-      primary: "blue",
+      primary: "#0080ff",
     },
     text: {
       danger: "#ffffff",
@@ -21,4 +21,4 @@ export const darkTheme: DefaultTheme = {
   },
 };
 
-export const lightTheme = {};
+const lightTheme = {};

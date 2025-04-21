@@ -3,7 +3,7 @@ import Layout from "./Layout";
 import Detail from "./Pages/Detail";
 import Home from "./Pages/Home";
 
-export const router = createBrowserRouter([
+const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
@@ -19,3 +19,5 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+
+export default router;

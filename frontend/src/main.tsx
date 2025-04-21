@@ -2,8 +2,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
 import { createGlobalStyle, ThemeProvider } from "styled-components";
-import { router } from "./routes.tsx";
 import { darkTheme } from "./theme.ts";
+import router from "./routes.tsx";
 
 const GlobalStyle = createGlobalStyle`
 
@@ -70,7 +70,7 @@ const GlobalStyle = createGlobalStyle`
 
   body{
     background-color: ${({ theme }) => theme.colors.bg};
-    color:${({ theme }) => theme.colors.text}
+    color:${({ theme }) => theme.colors.text};
   }
   input{
     background-color: ${({ theme }) => theme.colors.fg};

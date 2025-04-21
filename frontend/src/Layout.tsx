@@ -1,9 +1,27 @@
 import { Outlet } from "react-router-dom";
 import { Bounce, ToastContainer } from "react-toastify";
+import styled from "styled-components";
+
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const TitleWrapper = styled.div`
+  margin: 30px;
+`;
+
+const Title = styled.h1`
+  font-size: 30px;
+`;
 
 const Layout = () => {
   return (
-    <div style={{ display: "flex" }}>
+    <Wrapper>
+      <TitleWrapper>
+        <Title>거래목록</Title>
+      </TitleWrapper>
       <Outlet />
       <ToastContainer
         position="top-right"
@@ -18,7 +36,7 @@ const Layout = () => {
         theme="light"
         transition={Bounce}
       />
-    </div>
+    </Wrapper>
   );
 };
 

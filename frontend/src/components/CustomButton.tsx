@@ -3,19 +3,23 @@ import styled from "styled-components";
 
 type TVariant = "primary" | "danger" | "normal";
 
-const Btn = styled.button<{ variant?: TVariant }>`
-  background-color: ${({ theme, variant = "normal" }) =>
-    theme.btn.variant[variant]};
-  color: ${({ theme, variant = "normal" }) => theme.btn.text[variant]};
+const Btn = styled.button<{ $variant?: TVariant }>`
+  background-color: ${({ theme, $variant = "normal" }) =>
+    theme.btn.variant[$variant]};
+  color: ${({ theme, $variant = "normal" }) => theme.btn.text[$variant]};
 
   width: 50px;
   height: 30px;
   border-radius: 30px;
   cursor: pointer;
+
+  &:hover {
+    filter: brightness(85%);
+  }
 `;
 
 type btnProps = {
-  /** 버튼의 종류 */
+  /** 버튼의 타입 ("primary" | "danger" | "normal") */
   variant?: TVariant;
   children?: React.ReactNode;
 } & ButtonHTMLAttributes<HTMLButtonElement>;
@@ -25,7 +29,7 @@ export default function CustomButton({
   ...props
 }: btnProps) {
   return (
-    <Btn variant={variant} {...props}>
+    <Btn $variant={variant} {...props}>
       {children}
     </Btn>
   );

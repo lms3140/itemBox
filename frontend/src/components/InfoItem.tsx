@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 const Wrapper = styled.div`
-  background-color: salmon;
+  background-color: ${({ theme }) => theme.colors.fg.disabled};
   border-radius: 10px;
   border: 1px solid white;
   margin: 2px;

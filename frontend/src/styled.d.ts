@@ -3,7 +3,10 @@ declare module "styled-components" {
   export interface DefaultTheme {
     colors: {
       bg: string;
-      fg: string;
+      fg: {
+        active: string;
+        disabled: string;
+      };
       border: string;
       text: string;
     };

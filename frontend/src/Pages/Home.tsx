@@ -1,33 +1,30 @@
-import { AgGridReact } from "ag-grid-react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
 import {
   AllCommunityModule,
   CellDoubleClickedEvent,
   GridReadyEvent,
   ModuleRegistry,
-  provideGlobalGridOptions,
   RowSelectionOptions,
-  themeAlpine,
-  themeQuartz,
   type ColDef,
 } from "ag-grid-community";
-import styled from "styled-components";
-import { TItemDetailFormData, TItemDetailObj } from "../type";
+import { AgGridReact } from "ag-grid-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { postDataFetch } from "../utils/utils";
+import styled from "styled-components";
+import { v4 as uuidv4 } from "uuid";
+import { TItemDetailFormData, TItemDetailObj } from "../type";
 import {
   cellValueChangeHandler,
   deleteRowFunc,
   loadGridData,
 } from "../utils/gridUtils";
-import { SubmitHandler, useForm } from "react-hook-form";
 import {
   toastError,
   toastInfo,
   TOASTMESSAGE,
   toastSuccess,
 } from "../utils/toastUtils";
+import { postDataFetch } from "../utils/utils";
 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -56,9 +53,13 @@ const SideMenu = styled.div`
 
 const FormWrapper = styled.div`
   padding: 7px;
-  border: 2px solid #ddd;
+  border: 2px solid ${({ theme }) => theme.colors.border};
   border-radius: 5px;
   box-sizing: border-box;
+
+  input {
+    background-color: ${({ theme }) => theme.colors.fg.active};
+  }
 `;
 
 // styled-components end

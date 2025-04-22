@@ -227,7 +227,13 @@ function Detail() {
         </ListFormWrapper>
 
         <div style={{ width: 800, height: 500 }}>
-          <div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "end",
+              marginBottom: "10px",
+            }}
+          >
             <CustomButton
               variant="danger"
               onClick={() => {

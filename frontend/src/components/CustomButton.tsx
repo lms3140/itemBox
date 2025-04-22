@@ -7,7 +7,6 @@ const Btn = styled.button<{ $variant?: TVariant }>`
   background-color: ${({ theme, $variant = "normal" }) =>
     theme.btn.variant[$variant]};
   color: ${({ theme, $variant = "normal" }) => theme.btn.text[$variant]};
-
   width: 50px;
   height: 30px;
   border-radius: 30px;
@@ -18,7 +17,7 @@ const Btn = styled.button<{ $variant?: TVariant }>`
   }
 `;
 
-type btnProps = {
+type TCustomButtonProps = {
   /** 버튼의 타입 ("primary" | "danger" | "normal") */
   variant?: TVariant;
   children?: React.ReactNode;
@@ -27,7 +26,7 @@ export default function CustomButton({
   variant = "normal",
   children,
   ...props
-}: btnProps) {
+}: TCustomButtonProps) {
   return (
     <Btn $variant={variant} {...props}>
       {children}

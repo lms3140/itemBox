@@ -3,7 +3,10 @@ import { DefaultTheme } from "styled-components/dist/types";
 export const darkTheme: DefaultTheme = {
   colors: {
     bg: "#181D1F",
-    fg: "#3F4454",
+    fg: {
+      active: "#3F4454",
+      disabled: "#7A7F8F",
+    },
     border: "#ffffff",
     text: "#F9F5F8",
   },

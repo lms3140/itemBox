@@ -75,7 +75,6 @@ const GlobalStyle = createGlobalStyle`
   input{
     background-color: ${({ theme }) => theme.colors.fg};
     color:${({ theme }) => theme.colors.text};
-    margin-bottom: 10px;
   }
 
 

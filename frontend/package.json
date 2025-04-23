@@ -11,15 +11,18 @@
   },
   "dependencies": {
     "@ag-grid-community/client-side-row-model": "^32.3.3",
+    "@hookform/resolvers": "^5.0.1",
     "ag-grid-react": "^33.1.1",
     "react": "^19.0.0",
+    "react-datepicker": "^8.3.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.55.0",
     "react-router": "^6.30.0",
     "react-router-dom": "^6.30.0",
     "react-toastify": "^11.0.5",
     "styled-components": "^6.1.15",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "zod": "^3.25.0-canary.20250416T221658"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",

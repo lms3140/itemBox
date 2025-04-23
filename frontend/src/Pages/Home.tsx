@@ -8,11 +8,12 @@ import {
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { SubmitErrorHandler, SubmitHandler, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { v4 as uuidv4 } from "uuid";
-import { TItemDetailFormData, TItemDetailObj } from "../type";
+import { z } from "zod";
+import { TItemDetailObj } from "../type";
 import {
   cellValueChangeHandler,
   deleteRowFunc,
@@ -26,9 +27,11 @@ import {
 } from "../utils/toastUtils";
 import { postDataFetch } from "../utils/utils";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import CustomButton from "../components/CustomButton";
+import Input from "../components/RHFInput";
 
 //agGrid를 사용하기 위한 설정... 이게 뭔지는 제대로 모르겠음
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -63,6 +66,28 @@ const FormWrapper = styled.div`
 `;
 
 // styled-components end
+
+// zod 스키마
+const itemDetailSchema = z.object({
+  name: z.string().min(1, { message: "이름은 필수 항목입니다" }),
+  price: z.string().min(1, { message: "가격은 필수 항목입니다." }),
+  category_price: z
+    .string()
+    .min(1, { message: "소비자 명시가는 필수 항목입니다." }),
+  wholesale_price: z.string().min(1, { message: "원가는 필수 항목입니다." }),
+  category: z.string().min(1, { message: "카테고리는 필수 항목입니다." }),
+  fee: z.string().min(1, { message: "수수료는 필수 항목입니다." }),
+  purchase_quantity: z
+    .string()
+    .min(1, { message: "구매개수는 필수 항목입니다." }),
+  sold_quantity: z.string().min(1, { message: "판매개수는 필수 항목입니다." }),
+  purchase_date: z.string().min(1, { message: "구매일자는 필수 항목입니다." }),
+  release_date: z.string().min(1, { message: "출시일은 필수 항목입니다." }),
+  sales_type: z.string().min(1, { message: "판매유형은 필수 항목입니다." }),
+  etc: z.string(),
+});
+
+type TItemDetailFormData = z.infer<typeof itemDetailSchema>;
 
 // url
 const BASE_URL = "http://127.0.0.1:5000";
@@ -138,7 +163,14 @@ function Home() {
   // 데이터
   const [rowData, setRowData] = useState<TItemDetailObj[]>([]);
   const gridRef = useRef<AgGridReact<TItemDetailObj>>(null);
-  const { register, handleSubmit, reset } = useForm<TItemDetailFormData>();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<TItemDetailFormData>({
+    resolver: zodResolver(itemDetailSchema),
+  });
 
   const onSubmit: SubmitHandler<TItemDetailFormData> = async (
     data: TItemDetailFormData
@@ -156,6 +188,10 @@ function Home() {
     } catch (e) {
       toastError(TOASTMESSAGE.ERROR_ADD);
     }
+  };
+
+  const onInvalid: SubmitErrorHandler<TItemDetailFormData> = (errors) => {
+    toastError("폼 입력을 확인해주세요.");
   };
 
   const rowSelection = useMemo<RowSelectionOptions<TItemDetailObj, any>>(() => {
@@ -204,61 +240,81 @@ function Home() {
         </GridWrapper>
         <SideMenu>
           <FormWrapper>
-            <form action="" onSubmit={handleSubmit(onSubmit)}>
-              <label>이름</label>
-              <input
-                placeholder="이름"
-                {...register("name", { required: true })}
+            <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
+              <Input
+                label="이름"
+                name="name"
+                msg={errors.name?.message}
+                register={register}
               />
-              <label>판매가격</label>
-              <input
-                placeholder="판매가격"
-                {...register("price", { required: true })}
+              <Input
+                label="판매가격"
+                name="price"
+                msg={errors.price?.message}
+                register={register}
               />
-              <label>카테고리</label>
-              <input
-                placeholder="카테고리"
-                {...register("category", { required: true })}
+              <Input
+                label="카테고리"
+                name="category"
+                msg={errors.category?.message}
+                register={register}
               />
-              <label>도매가</label>
-              <input
-                placeholder="도매가"
-                {...register("wholesale_price", { required: true })}
+              <Input
+                label="도매가"
+                name="wholesale_price"
+                msg={errors.wholesale_price?.message}
+                register={register}
               />
-              <label>소비자권장가격</label>
-              <input
-                placeholder="소비자권장가격"
-                {...register("category_price", { required: true })}
+              <Input
+                label="소비자권장가격"
+                name="category_price"
+                msg={errors.category_price?.message}
+                register={register}
               />
-              <label>수수료</label>
-              <input
-                placeholder="수수료"
-                {...register("fee", { required: true })}
+              <Input
+                label="수수료"
+                name="fee"
+                msg={errors.fee?.message}
+                register={register}
               />
-              <label>구매개수</label>
-              <input
-                placeholder="구매개수"
-                {...register("purchase_quantity", { required: true })}
+              <Input
+                label="구매개수"
+                name="purchase_quantity"
+                msg={errors.purchase_quantity?.message}
+                register={register}
               />
-              <label>판매개수</label>
-              <input
-                placeholder="판매개수"
-                {...register("sold_quantity", { required: true })}
+              <Input
+                label="판매개수"
+                name="sold_quantity"
+                msg={errors.sold_quantity?.message}
+                register={register}
               />
-              <label>발매날짜</label>
-              <input
+              <Input
+                label="발매날짜"
+                name="release_date"
                 type="date"
-                {...register("release_date", { required: true })}
+                msg={errors.release_date?.message}
+                register={register}
               />
-              <label>구매날짜</label>
-              <input type="date" {...register("purchase_date")} />
-              <label>판매유형</label>
-              <input
-                placeholder="판매유형"
-                {...register("sales_type", { required: true })}
+              <Input
+                label="구매날짜"
+                name="purchase_date"
+                type="date"
+                msg={errors.purchase_date?.message}
+                register={register}
               />
-              <label>비고</label>
-              <input placeholder="비고" {...register("etc")} />
+              <Input
+                label="판매유형"
+                name="sales_type"
+                msg={errors.sales_type?.message}
+                register={register}
+              />
+              <Input
+                label="비고"
+                name="etc"
+                msg={errors.etc?.message}
+                register={register}
+              />
               <div
                 style={{
                   display: "flex",

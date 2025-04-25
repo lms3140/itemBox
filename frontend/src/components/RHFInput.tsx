@@ -5,11 +5,17 @@ const ErrorMessage = styled.p`
   font-size: 11px;
 `;
 
+const InputWrapper = styled.div`
+  color: ${({ theme }) => theme.colors.text};
+  input {
+    background-color: ${({ theme }) => theme.colors.fg.active};
+  }
+`;
+
 type InputProps<T extends FieldValues> = {
   label: string;
   name: Path<T>;
   register: UseFormRegister<T>;
-  required?: boolean;
   msg?: string | undefined;
   type?: React.HTMLInputTypeAttribute | undefined;
 };
@@ -22,10 +28,10 @@ export default function Input<T extends FieldValues>({
   msg,
 }: InputProps<T>) {
   return (
-    <div>
+    <InputWrapper>
       <label>{label}</label>
       <input type={type} placeholder={label} {...register(name)} />
       {msg && <ErrorMessage>{msg}</ErrorMessage>}
-    </div>
+    </InputWrapper>
   );
 }

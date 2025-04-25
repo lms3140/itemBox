@@ -19,6 +19,9 @@ import {
 import { toastError, toastSuccess } from "../utils/toastUtils";
 import { getDataFetch, postDataFetch } from "../utils/utils";
 import CustomButton from "../components/CustomButton";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Input from "../components/RHFInput";
 
 // styledComponents
 
@@ -77,6 +80,12 @@ const ListForm = styled.form`
   }
 `;
 
+const FormControllWrapper = styled.div`
+  display: flex;
+  justify-content: end;
+  grid-area: 4/2;
+`;
+
 const BASE_URL = "http://127.0.0.1:5000";
 
 //URL OBJECT
@@ -99,13 +108,23 @@ type TColItem = {
   itemId: string;
 };
 
-type TDetailFormData = {
-  customerName: string;
-  platform: string;
-  payment: string;
-  customerAddress: string;
-  etc: string;
-};
+// type TDetailFormData = {
+//   customerName: string;
+//   platform: string;
+//   payment: string;
+//   customerAddress: string;
+//   etc: string;
+// };
+
+const detailFormSchema = z.object({
+  customerName: z.string().min(1, { message: "이름은 필수." }),
+  platform: z.string().min(1, { message: "플랫폼은 필수입니다." }),
+  payment: z.string().min(1, { message: "결제금액" }),
+  customerAddress: z.string().min(1, { message: "주소가 없나요?" }),
+  etc: z.string(),
+});
+
+type TDetailFormData = z.infer<typeof detailFormSchema>;
 
 function Detail() {
   const { paramId } = useParams();
@@ -126,7 +145,14 @@ function Detail() {
     { field: "etc", headerName: "비고", editable: true },
   ]);
 
-  const { register, handleSubmit, reset } = useForm<TDetailFormData>();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<TDetailFormData>({
+    resolver: zodResolver(detailFormSchema),
+  });
 
   const fetchDetailInfo = async () => {
     if (!paramId) return;
@@ -196,33 +222,41 @@ function Detail() {
 
         <ListFormWrapper>
           <ListForm onSubmit={handleSubmit(onSubmit)}>
-            <label htmlFor="">주문자</label>
-            <input
-              placeholder="주문자"
-              {...register("customerName", { required: true })}
+            <Input
+              label="주문자"
+              name="customerName"
+              register={register}
+              msg={errors.customerName?.message}
             />
-            <label htmlFor="">주소</label>
-            <input
-              placeholder="주소"
-              {...register("customerAddress", { required: true })}
+            <Input
+              label="주소"
+              name="customerAddress"
+              register={register}
+              msg={errors.customerAddress?.message}
             />
-            <label htmlFor="">결제금액</label>
-            <input
-              placeholder="결제금액"
-              {...register("payment", { required: true })}
+            <Input
+              label="결제금액"
+              name="payment"
+              register={register}
+              msg={errors.payment?.message}
             />
-            <label htmlFor="">판매 플랫폼</label>
-            <input
-              placeholder="판매 플랫폼"
-              {...register("platform", { required: true })}
+            <Input
+              label="판매 플랫폼"
+              name="platform"
+              register={register}
+              msg={errors.platform?.message}
             />
-            <label htmlFor="">비고</label>
-            <input placeholder="비고" {...register("etc")} />
-            <div>
+            <Input
+              label="비고"
+              name="etc"
+              register={register}
+              msg={errors.etc?.message}
+            />
+            <FormControllWrapper>
               <CustomButton type="submit" variant="primary">
                 등록
               </CustomButton>
-            </div>
+            </FormControllWrapper>
           </ListForm>
         </ListFormWrapper>
 

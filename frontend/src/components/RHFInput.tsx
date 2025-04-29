@@ -3,6 +3,7 @@ import styled from "styled-components";
 
 const ErrorMessage = styled.p`
   font-size: 11px;
+  color: ${({ theme }) => theme.colors.error};
 `;
 
 const InputWrapper = styled.div`

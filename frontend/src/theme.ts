@@ -7,14 +7,17 @@ export const darkTheme: DefaultTheme = {
       active: "#3F4454",
       disabled: "#7A7F8F",
     },
+    hover: "#596073",
+    primary: "#4F7DD9",
     border: "#ffffff",
     text: "#F9F5F8",
+    error: "#FF4D4F",
   },
   btn: {
     variant: {
       danger: "red",
       normal: "#3F4454",
-      primary: "#0080ff",
+      primary: "#4F7DD9",
     },
     text: {
       danger: "#ffffff",

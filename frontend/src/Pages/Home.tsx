@@ -7,8 +7,13 @@ import {
   type ColDef,
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { SubmitErrorHandler, SubmitHandler, useForm } from "react-hook-form";
+import { Component, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Controller,
+  SubmitErrorHandler,
+  SubmitHandler,
+  useForm,
+} from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { v4 as uuidv4 } from "uuid";
@@ -33,10 +38,44 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import CustomButton from "../components/CustomButton";
 import Input from "../components/RHFInput";
 
+import "react-datepicker/dist/react-datepicker.css";
+import DatePicker from "react-datepicker";
+import { ko } from "date-fns/locale";
+import CustomDatePicker from "../components/CustomDatePicker";
+import { format } from "date-fns";
 //agGrid를 사용하기 위한 설정... 이게 뭔지는 제대로 모르겠음
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 // styled-components start
+
+const CalendarWrapper = styled.div`
+  .react-datepicker__header {
+    h2,
+    div {
+      color: ${({ theme }) => theme.colors.text};
+    }
+    background-color: ${({ theme }) => theme.colors.bg};
+  }
+  .react-datepicker__month {
+    margin: 0;
+    padding: 0.4rem;
+    background-color: ${({ theme }) => theme.colors.fg.active};
+  }
+  .react-datepicker__day {
+    color: ${({ theme }) => theme.colors.text};
+    &:hover {
+      background-color: ${({ theme }) => theme.colors.hover};
+    }
+    &:active {
+      background-color: ${({ theme }) => theme.colors.primary};
+    }
+  }
+  .react-datepicker__day--keyboard-selected,
+  .react-datepicker__day--selected {
+    background-color: ${({ theme }) => theme.colors.primary};
+    border: 1px solid ${({ theme }) => theme.colors.primary};
+  }
+`;
 
 const Wrapper = styled.div`
   display: flex;
@@ -81,8 +120,8 @@ const itemDetailSchema = z.object({
     .string()
     .min(1, { message: "구매개수는 필수 항목입니다." }),
   sold_quantity: z.string().min(1, { message: "판매개수는 필수 항목입니다." }),
-  purchase_date: z.string().min(1, { message: "구매일자는 필수 항목입니다." }),
-  release_date: z.string().min(1, { message: "출시일은 필수 항목입니다." }),
+  purchase_date: z.date({ required_error: "구매일자는 필수입니다!!" }),
+  release_date: z.date({ required_error: "발매날짜는 필수입니다." }),
   sales_type: z.string().min(1, { message: "판매유형은 필수 항목입니다." }),
   etc: z.string(),
 });
@@ -167,17 +206,21 @@ function Home() {
     register,
     handleSubmit,
     reset,
+    control,
+    watch,
     formState: { errors },
   } = useForm<TItemDetailFormData>({
     resolver: zodResolver(itemDetailSchema),
   });
-
+  console.log(watch());
   const onSubmit: SubmitHandler<TItemDetailFormData> = async (
     data: TItemDetailFormData
   ) => {
     try {
       const newObj: TItemDetailObj = {
         ...data,
+        purchase_date: format(data.purchase_date, "yyyy-MM-dd"),
+        release_date: format(data.release_date, "yyyy-MM-dd"),
         id: uuidv4(),
         created_by: "admin",
       };
@@ -289,19 +332,36 @@ function Home() {
                 msg={errors.sold_quantity?.message}
                 register={register}
               />
-              <Input
-                label="발매날짜"
+              <label>발매날짜</label>
+              <Controller
                 name="release_date"
-                type="date"
-                msg={errors.release_date?.message}
-                register={register}
+                control={control}
+                render={({ field }) => (
+                  <CustomDatePicker
+                    locale={ko}
+                    selected={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    placeholder="발매날짜"
+                    msg={errors.release_date?.message}
+                  />
+                )}
               />
-              <Input
-                label="구매날짜"
+
+              <label>구매날짜</label>
+              <Controller
                 name="purchase_date"
-                type="date"
-                msg={errors.purchase_date?.message}
-                register={register}
+                control={control}
+                render={({ field }) => (
+                  <CustomDatePicker
+                    locale={ko}
+                    onBlur={field.onBlur}
+                    onChange={field.onChange}
+                    placeholder="구매날짜"
+                    selected={field.value}
+                    msg={errors.release_date?.message}
+                  />
+                )}
               />
               <Input
                 label="판매유형"
@@ -330,6 +390,7 @@ function Home() {
                     deleteRowFunc(apiUrl.delete, gridRef, setRowData);
                   }}
                   variant="danger"
+                  type="button"
                 >
                   삭제
                 </CustomButton>

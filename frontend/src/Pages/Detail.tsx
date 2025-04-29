@@ -215,8 +215,14 @@ function Detail() {
           <InfoItem title="판매형식" content={detailInfo?.sales_type} />
           <InfoItem title="주문수량" content={detailInfo?.purchase_quantity} />
           <InfoItem title="판매한수량" content={detailInfo?.sold_quantity} />
-          <InfoItem title="발매일자" content={detailInfo?.release_date} />
-          <InfoItem title="주문일자" content={detailInfo?.purchase_date} />
+          <InfoItem
+            title="발매일자"
+            content={detailInfo?.release_date.toString()}
+          />
+          <InfoItem
+            title="주문일자"
+            content={detailInfo?.purchase_date.toString()}
+          />
           <InfoItem className="etc" title="비고" content={detailInfo?.etc} />
         </InfoWrapper>
 

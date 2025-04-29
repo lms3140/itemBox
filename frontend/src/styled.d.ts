@@ -7,8 +7,11 @@ declare module "styled-components" {
         active: string;
         disabled: string;
       };
+      hover: string;
+      primary: string;
       border: string;
       text: string;
+      error: string;
     };
     btn: {
       variant: {

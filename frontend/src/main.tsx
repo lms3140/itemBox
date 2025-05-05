@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
 import { createGlobalStyle, ThemeProvider } from "styled-components";
-import { darkTheme } from "./theme.ts";
+import { darkTheme, lightTheme } from "./theme.ts";
 import router from "./routes.tsx";
 
 const GlobalStyle = createGlobalStyle`
@@ -82,7 +82,7 @@ const GlobalStyle = createGlobalStyle`
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider theme={darkTheme}>
+    <ThemeProvider theme={lightTheme}>
       <RouterProvider router={router} />
       <GlobalStyle />
     </ThemeProvider>

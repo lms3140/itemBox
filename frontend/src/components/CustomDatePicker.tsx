@@ -47,7 +47,7 @@ type TCustomDatePickerProps = {
   msg?: string;
 };
 
-export default function CustomDatePicker({
+function CustomDatePicker({
   locale,
   onBlur,
   onChange,
@@ -58,6 +58,7 @@ export default function CustomDatePicker({
   return (
     <CalendarWrapper>
       <DatePicker
+        autoComplete="off"
         locale={locale}
         dateFormat={"yyyy-MM-dd"}
         selected={selected}
@@ -69,3 +70,5 @@ export default function CustomDatePicker({
     </CalendarWrapper>
   );
 }
+
+export default CustomDatePicker;

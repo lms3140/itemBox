@@ -31,7 +31,12 @@ export default function Input<T extends FieldValues>({
   return (
     <InputWrapper>
       <label>{label}</label>
-      <input type={type} placeholder={label} {...register(name)} />
+      <input
+        autoComplete="off"
+        type={type}
+        placeholder={label}
+        {...register(name)}
+      />
       {msg && <ErrorMessage>{msg}</ErrorMessage>}
     </InputWrapper>
   );

@@ -16,7 +16,7 @@ const Title = styled.h1`
   font-size: 30px;
 `;
 
-const Layout = () => {
+function Layout() {
   return (
     <Wrapper>
       <TitleWrapper>
@@ -38,6 +38,6 @@ const Layout = () => {
       />
     </Wrapper>
   );
-};
+}
 
 export default Layout;

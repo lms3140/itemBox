@@ -1,4 +1,4 @@
-import { DefaultTheme } from "styled-components/dist/types";
+import { DefaultTheme } from "styled-components";
 
 export const darkTheme: DefaultTheme = {
   colors: {
@@ -27,4 +27,29 @@ export const darkTheme: DefaultTheme = {
   },
 };
 
-const lightTheme = {};
+export const lightTheme: DefaultTheme = {
+  colors: {
+    bg: "#F9F9F9", // 밝은 배경
+    fg: {
+      active: "#E0E0E0", // 입력 필드/카드 배경
+      disabled: "#CCCCCC", // 비활성화된 요소
+    },
+    hover: "#D0D7E0", // 버튼/필드 hover 배경
+    primary: "#4F7DD9", // 동일한 강조 색상
+    border: "#333333", // 어두운 테두리로 대비 확보
+    text: "#1A1A1A", // 진한 텍스트 컬러
+    error: "#FF4D4F", // 강조 빨강 유지
+  },
+  btn: {
+    variant: {
+      danger: "red",
+      normal: "#E0E0E0", // 밝은 배경
+      primary: "#4F7DD9", // 일관된 primary 색상
+    },
+    text: {
+      danger: "#ffffff",
+      normal: "#1A1A1A", // 진한 텍스트
+      primary: "#ffffff",
+    },
+  },
+};

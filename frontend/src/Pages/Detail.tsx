@@ -173,6 +173,7 @@ function Detail() {
     fetchData();
   }, []);
 
+  // 그리드 준비되면 실행되는 함수.
   const gridReady = async (event: GridReadyEvent<TColItem, any>) => {
     event.api.sizeColumnsToFit();
     if (!paramId) return;
@@ -183,6 +184,7 @@ function Detail() {
     }
   };
 
+  // form 등록 함수
   const onSubmit: SubmitHandler<TDetailFormData> = async (data) => {
     if (!paramId) return;
     try {
@@ -196,6 +198,7 @@ function Detail() {
     }
   };
 
+  // AgGrid 선택 옵션
   const rowSelection = useMemo<RowSelectionOptions<TColItem, any>>(() => {
     return {
       mode: "singleRow",

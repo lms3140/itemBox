@@ -7,7 +7,7 @@ import {
   type ColDef,
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
-import { Component, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Controller,
   SubmitErrorHandler,
@@ -15,7 +15,7 @@ import {
   useForm,
 } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import styled from "styled-components";
+import styled, { useTheme } from "styled-components";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { TItemDetailObj } from "../type";
@@ -38,44 +38,14 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import CustomButton from "../components/CustomButton";
 import Input from "../components/RHFInput";
 
-import "react-datepicker/dist/react-datepicker.css";
-import DatePicker from "react-datepicker";
-import { ko } from "date-fns/locale";
-import CustomDatePicker from "../components/CustomDatePicker";
 import { format } from "date-fns";
+import { ko, th } from "date-fns/locale";
+import "react-datepicker/dist/react-datepicker.css";
+import CustomDatePicker from "../components/CustomDatePicker";
 //agGrid를 사용하기 위한 설정... 이게 뭔지는 제대로 모르겠음
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 // styled-components start
-
-const CalendarWrapper = styled.div`
-  .react-datepicker__header {
-    h2,
-    div {
-      color: ${({ theme }) => theme.colors.text};
-    }
-    background-color: ${({ theme }) => theme.colors.bg};
-  }
-  .react-datepicker__month {
-    margin: 0;
-    padding: 0.4rem;
-    background-color: ${({ theme }) => theme.colors.fg.active};
-  }
-  .react-datepicker__day {
-    color: ${({ theme }) => theme.colors.text};
-    &:hover {
-      background-color: ${({ theme }) => theme.colors.hover};
-    }
-    &:active {
-      background-color: ${({ theme }) => theme.colors.primary};
-    }
-  }
-  .react-datepicker__day--keyboard-selected,
-  .react-datepicker__day--selected {
-    background-color: ${({ theme }) => theme.colors.primary};
-    border: 1px solid ${({ theme }) => theme.colors.primary};
-  }
-`;
 
 const Wrapper = styled.div`
   display: flex;
@@ -233,6 +203,7 @@ function Home() {
     }
   };
 
+  // 에러 핸들러
   const onInvalid: SubmitErrorHandler<TItemDetailFormData> = (errors) => {
     toastError("폼 입력을 확인해주세요.");
   };
@@ -261,14 +232,13 @@ function Home() {
       toastError(TOASTMESSAGE.ERROR_GET);
     }
   };
-
   return (
     <>
       <Wrapper>
         <GridWrapper style={{ height: 500, width: 500 }}>
           <AgGridReact
             theme="legacy"
-            className="ag-theme-alpine-dark"
+            className={"ag-theme-alpine-dark"}
             ref={gridRef}
             onGridReady={gridReady}
             rowSelection={rowSelection}

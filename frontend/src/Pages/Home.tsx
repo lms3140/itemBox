@@ -15,7 +15,7 @@ import {
   useForm,
 } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import styled, { useTheme } from "styled-components";
+import styled from "styled-components";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { TItemDetailObj } from "../type";
@@ -39,9 +39,11 @@ import CustomButton from "../components/CustomButton";
 import Input from "../components/RHFInput";
 
 import { format } from "date-fns";
-import { ko, th } from "date-fns/locale";
+import { ko } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
 import CustomDatePicker from "../components/CustomDatePicker";
+import { useThemeStore } from "../store/zustandStore";
+
 //agGrid를 사용하기 위한 설정... 이게 뭔지는 제대로 모르겠음
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -177,12 +179,12 @@ function Home() {
     handleSubmit,
     reset,
     control,
-    watch,
     formState: { errors },
   } = useForm<TItemDetailFormData>({
     resolver: zodResolver(itemDetailSchema),
   });
-  console.log(watch());
+
+  // 서브밋 핸들러
   const onSubmit: SubmitHandler<TItemDetailFormData> = async (
     data: TItemDetailFormData
   ) => {
@@ -232,13 +234,17 @@ function Home() {
       toastError(TOASTMESSAGE.ERROR_GET);
     }
   };
+
+  // 전역 상태 관리 (store/zustandStore 참고)
+  const { isDark } = useThemeStore();
+
   return (
     <>
       <Wrapper>
         <GridWrapper style={{ height: 500, width: 500 }}>
           <AgGridReact
             theme="legacy"
-            className={"ag-theme-alpine-dark"}
+            className={isDark ? "ag-theme-alpine-dark" : "ag-theme-alpine"}
             ref={gridRef}
             onGridReady={gridReady}
             rowSelection={rowSelection}

@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   GridReadyEvent,
   RowSelectionOptions,
@@ -9,7 +10,11 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { useParams } from "react-router";
 import styled from "styled-components";
 import { v4 as uuidv4 } from "uuid";
+import { z } from "zod";
+import CustomButton from "../components/CustomButton";
 import InfoItem from "../components/InfoItem";
+import Input from "../components/RHFInput";
+import { useThemeStore } from "../store/zustandStore";
 import { TItemDetailObj } from "../type";
 import {
   cellValueChangeHandler,
@@ -18,10 +23,6 @@ import {
 } from "../utils/gridUtils";
 import { toastError, toastSuccess } from "../utils/toastUtils";
 import { getDataFetch, postDataFetch } from "../utils/utils";
-import CustomButton from "../components/CustomButton";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import Input from "../components/RHFInput";
 
 // styledComponents
 
@@ -108,14 +109,7 @@ type TColItem = {
   itemId: string;
 };
 
-// type TDetailFormData = {
-//   customerName: string;
-//   platform: string;
-//   payment: string;
-//   customerAddress: string;
-//   etc: string;
-// };
-
+// 데이터 검증을 위한 스키마
 const detailFormSchema = z.object({
   customerName: z.string().min(1, { message: "이름은 필수." }),
   platform: z.string().min(1, { message: "플랫폼은 필수입니다." }),
@@ -124,6 +118,7 @@ const detailFormSchema = z.object({
   etc: z.string(),
 });
 
+// react hook form을 위한 타입
 type TDetailFormData = z.infer<typeof detailFormSchema>;
 
 function Detail() {
@@ -204,6 +199,8 @@ function Detail() {
       mode: "singleRow",
     };
   }, []);
+
+  const { isDark } = useThemeStore();
 
   return (
     <>
@@ -288,7 +285,7 @@ function Detail() {
           </div>
           <AgGridReact
             theme="legacy"
-            className="ag-theme-alpine-dark"
+            className={isDark ? "ag-theme-alpine-dark" : "ag-theme-alpine"}
             ref={gridRef}
             getRowId={(p) => p.data.id}
             rowSelection={rowSelection}

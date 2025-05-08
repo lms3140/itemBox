@@ -3,6 +3,7 @@ import { Bounce, ToastContainer } from "react-toastify";
 import styled, { createGlobalStyle, ThemeProvider } from "styled-components";
 import { darkTheme, lightTheme } from "./theme";
 import { useThemeStore } from "./store/zustandStore";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const GlobalStyle = createGlobalStyle`
 
@@ -92,6 +93,8 @@ const TitleWrapper = styled.div`
 const Title = styled.h1`
   font-size: 30px;
 `;
+
+const queryClient = new QueryClient();
 function Layout() {
   const { isDark, setTheme } = useThemeStore();
   return (
@@ -108,7 +111,9 @@ function Layout() {
         <TitleWrapper>
           <Title>거래목록</Title>
         </TitleWrapper>
-        <Outlet />
+        <QueryClientProvider client={queryClient}>
+          <Outlet />
+        </QueryClientProvider>
         <ToastContainer
           position="top-right"
           autoClose={5000}

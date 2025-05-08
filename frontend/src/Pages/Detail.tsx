@@ -23,6 +23,7 @@ import {
 } from "../utils/gridUtils";
 import { toastError, toastSuccess } from "../utils/toastUtils";
 import { getDataFetch, postDataFetch } from "../utils/utils";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 // styledComponents
 
@@ -125,7 +126,6 @@ function Detail() {
   const { paramId } = useParams();
   const gridRef = useRef<AgGridReact<TColItem>>(null);
   const [rowData, setRowData] = useState<TColItem[]>([]);
-  const [detailInfo, setDetailInfo] = useState<TItemDetailObj>();
 
   const [colDefs, _] = useState<ColDef<TColItem>[]>([
     { field: "id", headerName: "id", width: 80, hide: true },
@@ -154,19 +154,6 @@ function Detail() {
     const res = await getDataFetch(apiUrlObj.getInfo(paramId));
     return res;
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const result = await fetchDetailInfo();
-        setDetailInfo(result);
-      } catch (e) {
-        console.log(e);
-        toastError("데이터를 불러오는중 오류가 발생했습니다.");
-      }
-    };
-    fetchData();
-  }, []);
 
   // 그리드 준비되면 실행되는 함수.
   const gridReady = async (event: GridReadyEvent<TColItem, any>) => {
@@ -202,28 +189,31 @@ function Detail() {
 
   const { isDark } = useThemeStore();
 
+  const { data, error } = useQuery<TItemDetailObj>({
+    queryKey: ["detailInfo"],
+    queryFn: fetchDetailInfo,
+  });
+
+  if (error) {
+    toastError("데이터 오류");
+  }
+
   return (
     <>
       <Wrapper>
-        <h1>{detailInfo?.name}</h1>
+        <h1>{data?.name}</h1>
         <InfoWrapper>
-          <InfoItem title="도매가" content={detailInfo?.wholesale_price} />
-          <InfoItem title="소비자명시가" content={detailInfo?.category_price} />
-          <InfoItem title="판매가" content={detailInfo?.price} />
-          <InfoItem title="수수료" content={detailInfo?.fee} />
-          <InfoItem title="카테고리" content={detailInfo?.category} />
-          <InfoItem title="판매형식" content={detailInfo?.sales_type} />
-          <InfoItem title="주문수량" content={detailInfo?.purchase_quantity} />
-          <InfoItem title="판매한수량" content={detailInfo?.sold_quantity} />
-          <InfoItem
-            title="발매일자"
-            content={detailInfo?.release_date.toString()}
-          />
-          <InfoItem
-            title="주문일자"
-            content={detailInfo?.purchase_date.toString()}
-          />
-          <InfoItem className="etc" title="비고" content={detailInfo?.etc} />
+          <InfoItem title="도매가" content={data?.wholesale_price} />
+          <InfoItem title="소비자명시가" content={data?.category_price} />
+          <InfoItem title="판매가" content={data?.price} />
+          <InfoItem title="수수료" content={data?.fee} />
+          <InfoItem title="카테고리" content={data?.category} />
+          <InfoItem title="판매형식" content={data?.sales_type} />
+          <InfoItem title="주문수량" content={data?.purchase_quantity} />
+          <InfoItem title="판매한수량" content={data?.sold_quantity} />
+          <InfoItem title="발매일자" content={data?.release_date.toString()} />
+          <InfoItem title="주문일자" content={data?.purchase_date.toString()} />
+          <InfoItem className="etc" title="비고" content={data?.etc} />
         </InfoWrapper>
 
         <ListFormWrapper>

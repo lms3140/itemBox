@@ -79,13 +79,12 @@ UI 시스템을 React로 구현한것입니다.
 
 ## 폴더 구조 요약
 
-src/
-┣ components/ # 공통 UI 컴포넌트
-┣ pages/ # Home, Detail 등 페이지
-┣ store/ # zustand 전역 상태
-┣ layout/ # 레이아웃 컴포넌트
-┣ utils/ # fetch, toast, grid 유틸
-┣ theme.ts # 다크/라이트 테마 정의
-┣ routes.tsx # React Router 설정
-┣ styled.d.ts # styled-components 타입
-┗ main.tsx # 앱 진입점
+- `components/`: 공통 UI 컴포넌트
+- `pages/`: Home, Detail 등 페이지 컴포넌트
+- `store/`: zustand 전역 상태
+- `layout/`: 전체 레이아웃 컴포넌트
+- `utils/`: fetch, toast, grid 유틸리티
+- `theme.ts`: 다크/라이트 테마 정의
+- `routes.tsx`: React Router 설정
+- `styled.d.ts`: styled-components 타입
+- `main.tsx`: 앱 진입점

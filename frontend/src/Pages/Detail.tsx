@@ -187,8 +187,10 @@ function Detail() {
     };
   }, []);
 
+  // zustand
   const { isDark } = useThemeStore();
 
+  // react query
   const { data, error } = useQuery<TItemDetailObj>({
     queryKey: ["detailInfo"],
     queryFn: fetchDetailInfo,

@@ -1,9 +1,9 @@
-import { ButtonHTMLAttributes } from "react";
+import { HTMLMotionProps, motion } from "motion/react";
 import styled from "styled-components";
 
 type TVariant = "primary" | "danger" | "normal";
 
-const Btn = styled.button<{ $variant?: TVariant }>`
+const Btn = styled(motion.button)<{ $variant?: TVariant }>`
   background-color: ${({ theme, $variant = "normal" }) =>
     theme.btn.variant[$variant]};
   color: ${({ theme, $variant = "normal" }) => theme.btn.text[$variant]};
@@ -21,14 +21,19 @@ type TCustomButtonProps = {
   /** 버튼의 타입 ("primary" | "danger" | "normal") */
   variant?: TVariant;
   children?: React.ReactNode;
-} & ButtonHTMLAttributes<HTMLButtonElement>;
+} & HTMLMotionProps<"button">;
 export default function CustomButton({
   variant = "normal",
   children,
   ...props
 }: TCustomButtonProps) {
   return (
-    <Btn $variant={variant} {...props}>
+    <Btn
+      whileTap={{ scale: 0.9 }}
+      whileHover={{ scale: 1.1 }}
+      $variant={variant}
+      {...props}
+    >
       {children}
     </Btn>
   );

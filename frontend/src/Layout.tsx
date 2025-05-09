@@ -4,6 +4,7 @@ import styled, { createGlobalStyle, ThemeProvider } from "styled-components";
 import { darkTheme, lightTheme } from "./theme";
 import { useThemeStore } from "./store/zustandStore";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { motion, spring } from "motion/react";
 
 const GlobalStyle = createGlobalStyle`
 
@@ -94,6 +95,24 @@ const Title = styled.h1`
   font-size: 30px;
 `;
 
+const ThemeBtn = styled(motion.button)<{ $isDark: boolean }>`
+  width: 75px;
+  display: flex;
+  background-color: ${({ theme }) => theme.btn.variant.normal};
+  justify-content: ${({ $isDark }) => (!$isDark ? "flex-start" : "flex-end")};
+  font-size: 25px;
+  border-radius: 20px;
+  margin: 10px 0;
+  cursor: pointer;
+`;
+
+const Header = styled.div`
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+  padding-right: 40px;
+`;
+
 const queryClient = new QueryClient();
 function Layout() {
   const { isDark, setTheme } = useThemeStore();
@@ -101,13 +120,22 @@ function Layout() {
     <ThemeProvider theme={isDark ? darkTheme : lightTheme}>
       <GlobalStyle />
       <Wrapper>
-        <button
-          onClick={() => {
-            setTheme();
-          }}
-        >
-          섹시버튼
-        </button>
+        <Header className="test">
+          <ThemeBtn
+            animate
+            onClick={() => {
+              setTheme();
+            }}
+            $isDark={isDark}
+          >
+            <motion.div
+              layout
+              transition={{ type: "spring", visualDuration: 0.2, bounce: 0.2 }}
+            >
+              {isDark ? "🌕" : "☀️"}
+            </motion.div>
+          </ThemeBtn>
+        </Header>
         <TitleWrapper>
           <Title>거래목록</Title>
         </TitleWrapper>

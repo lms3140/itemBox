@@ -109,8 +109,8 @@ const ThemeBtn = styled(motion.button)<{ $isDark: boolean }>`
 const Header = styled.div`
   display: flex;
   width: 100%;
-  justify-content: flex-end;
-  padding-right: 40px;
+  justify-content: flex-start;
+  padding-left: 40px;
 `;
 
 const queryClient = new QueryClient();

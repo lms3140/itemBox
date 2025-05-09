@@ -80,12 +80,14 @@ UI 시스템을 React로 구현한것입니다.
 
 ## 폴더 구조 요약
 
+- `api/`: API URL, fetch 함수, gridService 등 API 호출 관련 로직
 - `components/`: 공통 UI 컴포넌트
-- `pages/`: Home, Detail 등 페이지 컴포넌트
-- `store/`: zustand 전역 상태
-- `layout/`: 전체 레이아웃 컴포넌트
-- `utils/`: fetch, toast, grid 유틸리티
-- `theme.ts`: 다크/라이트 테마 정의
+- `layout/`: 전체 레이아웃 컴포넌트 (예: Layout.tsx)
+- `pages/`: 라우트 기반 화면 컴포넌트 (Home, Detail 등)
+- `schema/`: zod 기반 폼 스키마 정의
+- `store/`: zustand 전역 상태 관리
+- `styles/`: styled-components 테마 설정 및 타입 확장
+- `types/`: 전역 공통 타입 정의
+- `utils/`: toast 등 공통 유틸리티 함수
 - `routes.tsx`: React Router 설정
-- `styled.d.ts`: styled-components 타입
 - `main.tsx`: 앱 진입점

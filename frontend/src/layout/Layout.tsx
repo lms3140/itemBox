@@ -135,6 +135,7 @@ function Layout() {
               {isDark ? "🌕" : "☀️"}
             </motion.div>
           </ThemeBtn>
+          <div>마진율 계산기</div>
         </Header>
         <TitleWrapper>
           <Title>거래목록</Title>

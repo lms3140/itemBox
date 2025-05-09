@@ -149,12 +149,6 @@ function Detail() {
     resolver: zodResolver(detailFormSchema),
   });
 
-  const fetchDetailInfo = async () => {
-    if (!paramId) return;
-    const res = await getDataFetch(apiUrlObj.getInfo(paramId));
-    return res;
-  };
-
   // 그리드 준비되면 실행되는 함수.
   const gridReady = async (event: GridReadyEvent<TColItem, any>) => {
     event.api.sizeColumnsToFit();
@@ -190,14 +184,22 @@ function Detail() {
   // zustand
   const { isDark } = useThemeStore();
 
+  // 상품 상세정보를 가져오는 fetch 함수
+  const fetchDetailInfo = async () => {
+    if (!paramId) throw new Error("paramId 이 없습니다.");
+    const res = await getDataFetch(apiUrlObj.getInfo(paramId));
+    return res;
+  };
+
   // react query
   const { data, error } = useQuery<TItemDetailObj>({
     queryKey: ["detailInfo"],
     queryFn: fetchDetailInfo,
+    enabled: !!paramId,
   });
 
   if (error) {
-    toastError("데이터 오류");
+    toastError("데이터를 불러오지 못했습니다.");
   }
 
   return (
@@ -205,17 +207,26 @@ function Detail() {
       <Wrapper>
         <h1>{data?.name}</h1>
         <InfoWrapper>
-          <InfoItem title="도매가" content={data?.wholesale_price} />
-          <InfoItem title="소비자명시가" content={data?.category_price} />
-          <InfoItem title="판매가" content={data?.price} />
-          <InfoItem title="수수료" content={data?.fee} />
+          <InfoItem title="도매가" content={data?.wholesale_price + "엔"} />
+          <InfoItem
+            title="소비자명시가"
+            content={data?.category_price + "엔"}
+          />
+          <InfoItem title="판매가" content={data?.price + "원"} />
+          <InfoItem title="수수료" content={data?.fee + "원"} />
           <InfoItem title="카테고리" content={data?.category} />
           <InfoItem title="판매형식" content={data?.sales_type} />
           <InfoItem title="주문수량" content={data?.purchase_quantity} />
           <InfoItem title="판매한수량" content={data?.sold_quantity} />
+          <InfoItem
+            title="재고"
+            content={String(
+              Number(data?.purchase_quantity) - Number(data?.sold_quantity)
+            )}
+          />
           <InfoItem title="발매일자" content={data?.release_date.toString()} />
           <InfoItem title="주문일자" content={data?.purchase_date.toString()} />
-          <InfoItem className="etc" title="비고" content={data?.etc} />
+          <InfoItem title="비고" content={data?.etc} />
         </InfoWrapper>
 
         <ListFormWrapper>

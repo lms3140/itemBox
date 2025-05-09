@@ -12,10 +12,10 @@ const toastOption: ToastOptions<unknown> | undefined = {
   transition: Bounce,
 };
 
+// 토스트 에러 처리
 export const toastInfo = (msg: string) => {
   toast.info(msg, toastOption);
 };
-
 export const toastError = (msg: string) => {
   toast.error(msg, toastOption);
 };

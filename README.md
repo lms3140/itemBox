@@ -75,7 +75,8 @@ UI 시스템을 React로 구현한것입니다.
 
 - 사용자 인증 + 로그인 연동
 - 테스트 코드 해보기
-- Theme 상태 localStorage에 저장
+- Theme 상태 localStorage에 저장 (완료)
+- 마진율 계산기
 
 ## 폴더 구조 요약
 

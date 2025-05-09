@@ -16,14 +16,16 @@ import CustomButton from "../components/CustomButton";
 import InfoItem from "../components/InfoItem";
 import Input from "../components/RHFInput";
 import { useThemeStore } from "../store/zustandStore";
-import { TItemDetailObj } from "../type";
+import { TDetailTableItem, THomeTableItem } from "../types/form";
 import {
   cellValueChangeHandler,
   deleteRowFunc,
   loadGridData,
-} from "../utils/gridUtils";
+} from "../api/gridService";
 import { toastError, toastSuccess } from "../utils/toastUtils";
-import { getDataFetch, postDataFetch } from "../utils/utils";
+import { getDataFetch, postDataFetch } from "../api/fetch";
+import { detailFormSchema } from "../schema/formSchema";
+import { detailAPIObject } from "../api/apiURL";
 
 // styledComponents
 
@@ -88,46 +90,15 @@ const FormControllWrapper = styled.div`
   grid-area: 4/2;
 `;
 
-const BASE_URL = "http://127.0.0.1:5000";
-
-//URL OBJECT
-const apiUrlObj = {
-  add: `${BASE_URL}/api/detail/grid-row/add`,
-  update: `${BASE_URL}/api/detail/grid-row/update`,
-  delete: `${BASE_URL}/api/detail/grid-row/delete`,
-  get: (id: string) => `${BASE_URL}/api/detail/grid-rows/${id}`,
-  getInfo: (id: string) => `${BASE_URL}/api/detail/${id}`,
-};
-
-// 타입
-type TColItem = {
-  id: string;
-  customerName: string;
-  platform: string;
-  payment: string;
-  customerAddress: string;
-  etc: string;
-  itemId: string;
-};
-
-// 데이터 검증을 위한 스키마
-const detailFormSchema = z.object({
-  customerName: z.string().min(1, { message: "이름은 필수." }),
-  platform: z.string().min(1, { message: "플랫폼은 필수입니다." }),
-  payment: z.string().min(1, { message: "결제금액" }),
-  customerAddress: z.string().min(1, { message: "주소가 없나요?" }),
-  etc: z.string(),
-});
-
 // react hook form을 위한 타입
-type TDetailFormData = z.infer<typeof detailFormSchema>;
+type TDetailForm = z.infer<typeof detailFormSchema>;
 
 function Detail() {
   const { paramId } = useParams();
-  const gridRef = useRef<AgGridReact<TColItem>>(null);
-  const [rowData, setRowData] = useState<TColItem[]>([]);
+  const gridRef = useRef<AgGridReact<TDetailTableItem>>(null);
+  const [rowData, setRowData] = useState<TDetailTableItem[]>([]);
 
-  const [colDefs, _] = useState<ColDef<TColItem>[]>([
+  const [colDefs, _] = useState<ColDef<TDetailTableItem>[]>([
     { field: "id", headerName: "id", width: 80, hide: true },
     {
       field: "customerName",
@@ -145,27 +116,31 @@ function Detail() {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<TDetailFormData>({
+  } = useForm<TDetailForm>({
     resolver: zodResolver(detailFormSchema),
   });
 
   // 그리드 준비되면 실행되는 함수.
-  const gridReady = async (event: GridReadyEvent<TColItem, any>) => {
+  const gridReady = async (event: GridReadyEvent<TDetailTableItem, any>) => {
     event.api.sizeColumnsToFit();
     if (!paramId) return;
     try {
-      await loadGridData(apiUrlObj.get(paramId), setRowData);
+      await loadGridData(detailAPIObject.get(paramId), setRowData);
     } catch (e) {
       toastError("데이터를 불러오는 중 오류가 발생했습니다.");
     }
   };
 
   // form 등록 함수
-  const onSubmit: SubmitHandler<TDetailFormData> = async (data) => {
+  const onSubmit: SubmitHandler<TDetailForm> = async (data) => {
     if (!paramId) return;
     try {
-      const newData: TColItem = { id: uuidv4(), itemId: paramId, ...data };
-      const result = await postDataFetch(apiUrlObj.add, newData);
+      const newData: TDetailTableItem = {
+        id: uuidv4(),
+        itemId: paramId,
+        ...data,
+      };
+      const result = await postDataFetch(detailAPIObject.add, newData);
       setRowData((v) => [...v, result.data]);
       reset();
       toastSuccess("등록을 완료했습니다.");
@@ -175,7 +150,9 @@ function Detail() {
   };
 
   // AgGrid 선택 옵션
-  const rowSelection = useMemo<RowSelectionOptions<TColItem, any>>(() => {
+  const rowSelection = useMemo<
+    RowSelectionOptions<TDetailTableItem, any>
+  >(() => {
     return {
       mode: "singleRow",
     };
@@ -187,12 +164,12 @@ function Detail() {
   // 상품 상세정보를 가져오는 fetch 함수
   const fetchDetailInfo = async () => {
     if (!paramId) throw new Error("paramId 이 없습니다.");
-    const res = await getDataFetch(apiUrlObj.getInfo(paramId));
+    const res = await getDataFetch(detailAPIObject.getInfo(paramId));
     return res;
   };
 
   // react query
-  const { data, error } = useQuery<TItemDetailObj>({
+  const { data, error } = useQuery<THomeTableItem>({
     queryKey: ["detailInfo"],
     queryFn: fetchDetailInfo,
     enabled: !!paramId,
@@ -280,7 +257,7 @@ function Detail() {
             <CustomButton
               variant="danger"
               onClick={() => {
-                deleteRowFunc(apiUrlObj.delete, gridRef, setRowData);
+                deleteRowFunc(detailAPIObject.delete, gridRef, setRowData);
               }}
             >
               삭제
@@ -296,7 +273,7 @@ function Detail() {
             columnDefs={colDefs}
             rowData={rowData}
             onCellValueChanged={(e) => {
-              cellValueChangeHandler(e, apiUrlObj.update);
+              cellValueChangeHandler(e, detailAPIObject.update);
             }}
           />
         </div>

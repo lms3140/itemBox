@@ -1,8 +1,8 @@
 import { AgGridReact } from "ag-grid-react";
-import { getDataFetch, postDataFetch } from "./utils";
+import { getDataFetch, postDataFetch } from "./fetch";
 import { CellValueChangedEvent } from "ag-grid-community";
 import { Dispatch, SetStateAction } from "react";
-import { toastError, TOASTMESSAGE, toastSuccess } from "./toastUtils";
+import { toastError, TOASTMESSAGE, toastSuccess } from "../utils/toastUtils";
 
 /**
  * "AG Grid"에서 하나의 행을 삭제하기 위한 함수

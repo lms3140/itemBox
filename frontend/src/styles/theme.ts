@@ -1,5 +1,7 @@
 import { DefaultTheme } from "styled-components";
 
+// 다크모드 색 지정후 gpt로 라이트모드의 색 추천받음...
+
 export const darkTheme: DefaultTheme = {
   colors: {
     bg: "#181D1F",

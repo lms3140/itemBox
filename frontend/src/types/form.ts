@@ -1,5 +1,5 @@
-// Main의 아이템 등록에 쓰는 타입
-export type TItemDetailObj = {
+// Home.tsx 테이블에 사용되는 타입
+export type THomeTableItem = {
   id: string;
   name: string; // 이름
   price: string; // 실제 가격
@@ -17,8 +17,13 @@ export type TItemDetailObj = {
   created_at?: string; // 등록일
 };
 
-// 음... 나중에 하기
-export type TResult = {
-  message: string;
-  data: string;
+// Detail.tsx 테이블에 사용되는 타입
+export type TDetailTableItem = {
+  id: string;
+  customerName: string;
+  platform: string;
+  payment: string;
+  customerAddress: string;
+  etc: string;
+  itemId: string;
 };

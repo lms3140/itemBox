@@ -18,19 +18,19 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-import { TItemDetailObj } from "../type";
+import { THomeTableItem } from "../types/form";
 import {
   cellValueChangeHandler,
   deleteRowFunc,
   loadGridData,
-} from "../utils/gridUtils";
+} from "../api/gridService";
 import {
   toastError,
   toastInfo,
   TOASTMESSAGE,
   toastSuccess,
 } from "../utils/toastUtils";
-import { postDataFetch } from "../utils/utils";
+import { postDataFetch } from "../api/fetch";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import "ag-grid-community/styles/ag-grid.css";
@@ -43,6 +43,8 @@ import { ko } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
 import CustomDatePicker from "../components/CustomDatePicker";
 import { useThemeStore } from "../store/zustandStore";
+import { homeFormSchema } from "../schema/formSchema";
+import { homeAPIObject } from "../api/apiURL";
 
 //agGrid를 사용하기 위한 설정... 이게 뭔지는 제대로 모르겠음
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -78,36 +80,8 @@ const FormWrapper = styled.div`
 
 // styled-components end
 
-// zod 스키마
-const itemDetailSchema = z.object({
-  name: z.string().min(1, { message: "이름은 필수 항목입니다" }),
-  price: z.string().min(1, { message: "가격은 필수 항목입니다." }),
-  category_price: z
-    .string()
-    .min(1, { message: "소비자 명시가는 필수 항목입니다." }),
-  wholesale_price: z.string().min(1, { message: "원가는 필수 항목입니다." }),
-  category: z.string().min(1, { message: "카테고리는 필수 항목입니다." }),
-  fee: z.string().min(1, { message: "수수료는 필수 항목입니다." }),
-  purchase_quantity: z
-    .string()
-    .min(1, { message: "구매개수는 필수 항목입니다." }),
-  sold_quantity: z.string().min(1, { message: "판매개수는 필수 항목입니다." }),
-  purchase_date: z.date({ required_error: "구매일자는 필수입니다!!" }),
-  release_date: z.date({ required_error: "발매날짜는 필수입니다." }),
-  sales_type: z.string().min(1, { message: "판매유형은 필수 항목입니다." }),
-  etc: z.string(),
-});
-
-type TItemDetailFormData = z.infer<typeof itemDetailSchema>;
-
-// url
-const BASE_URL = "http://127.0.0.1:5000";
-const apiUrl = {
-  add: `${BASE_URL}/api/main/grid-row/add`,
-  delete: `${BASE_URL}/api/main/grid-row/delete`,
-  update: `${BASE_URL}/api/main/grid-data/update`,
-  get: `${BASE_URL}/api/main/grid-rows`,
-};
+// form 타입
+type THomeForm = z.infer<typeof homeFormSchema>;
 
 function Home() {
   const navigate = useNavigate();
@@ -115,7 +89,7 @@ function Home() {
     toastInfo("한번 테스트 해볼까요??");
   }, []);
   // 표 머리글
-  const [colDefs, _] = useState<ColDef<TItemDetailObj>[]>([
+  const [colDefs, _] = useState<ColDef<THomeTableItem>[]>([
     { field: "id", maxWidth: 70, hide: true },
     { field: "name", minWidth: 100, headerName: "이름", editable: true },
     { field: "price", minWidth: 100, headerName: "판매가", editable: true },
@@ -172,31 +146,29 @@ function Home() {
   ]);
 
   // 데이터
-  const [rowData, setRowData] = useState<TItemDetailObj[]>([]);
-  const gridRef = useRef<AgGridReact<TItemDetailObj>>(null);
+  const [rowData, setRowData] = useState<THomeTableItem[]>([]);
+  const gridRef = useRef<AgGridReact<THomeTableItem>>(null);
   const {
     register,
     handleSubmit,
     reset,
     control,
     formState: { errors },
-  } = useForm<TItemDetailFormData>({
-    resolver: zodResolver(itemDetailSchema),
+  } = useForm<THomeForm>({
+    resolver: zodResolver(homeFormSchema),
   });
 
   // 서브밋 핸들러
-  const onSubmit: SubmitHandler<TItemDetailFormData> = async (
-    data: TItemDetailFormData
-  ) => {
+  const onSubmit: SubmitHandler<THomeForm> = async (data: THomeForm) => {
     try {
-      const newObj: TItemDetailObj = {
+      const newObj: THomeTableItem = {
         ...data,
         purchase_date: format(data.purchase_date, "yyyy-MM-dd"),
         release_date: format(data.release_date, "yyyy-MM-dd"),
         id: uuidv4(),
         created_by: "admin",
       };
-      const result = await postDataFetch(apiUrl.add, newObj);
+      const result = await postDataFetch(homeAPIObject.add, newObj);
       setRowData((v) => [...v, result.data]);
       reset();
       toastSuccess(TOASTMESSAGE.SUCCESS_ADD);
@@ -206,11 +178,11 @@ function Home() {
   };
 
   // 에러 핸들러
-  const onInvalid: SubmitErrorHandler<TItemDetailFormData> = () => {
+  const onInvalid: SubmitErrorHandler<THomeForm> = () => {
     toastError("폼 입력을 확인해주세요.");
   };
 
-  const rowSelection = useMemo<RowSelectionOptions<TItemDetailObj, any>>(() => {
+  const rowSelection = useMemo<RowSelectionOptions<THomeTableItem, any>>(() => {
     return {
       mode: "singleRow",
     };
@@ -218,7 +190,7 @@ function Home() {
 
   //셀 클릭 이벤트 - 상세페이지로 넘어가기 위함함
   const cellClickEvent = (
-    event: CellDoubleClickedEvent<TItemDetailObj, any>
+    event: CellDoubleClickedEvent<THomeTableItem, any>
   ) => {
     if (!event.data) return;
     const { id } = event.data;
@@ -226,10 +198,10 @@ function Home() {
   };
 
   // agGrid가 마운트 될때 실행되는 함수.
-  const gridReady = async (event: GridReadyEvent<TItemDetailObj, any>) => {
+  const gridReady = async (event: GridReadyEvent<THomeTableItem, any>) => {
     event.api.sizeColumnsToFit();
     try {
-      await loadGridData(apiUrl.get, setRowData);
+      await loadGridData(homeAPIObject.get, setRowData);
     } catch (e) {
       toastError(TOASTMESSAGE.ERROR_GET);
     }
@@ -252,7 +224,7 @@ function Home() {
             rowData={rowData}
             columnDefs={colDefs}
             onCellValueChanged={(e) => {
-              cellValueChangeHandler(e, apiUrl.update);
+              cellValueChangeHandler(e, homeAPIObject.update);
             }}
             onCellDoubleClicked={cellClickEvent}
           />
@@ -363,7 +335,7 @@ function Home() {
                 </CustomButton>
                 <CustomButton
                   onClick={() => {
-                    deleteRowFunc(apiUrl.delete, gridRef, setRowData);
+                    deleteRowFunc(homeAPIObject.delete, gridRef, setRowData);
                   }}
                   variant="danger"
                   type="button"

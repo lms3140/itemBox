@@ -206,7 +206,7 @@ function Home() {
   };
 
   // 에러 핸들러
-  const onInvalid: SubmitErrorHandler<TItemDetailFormData> = (errors) => {
+  const onInvalid: SubmitErrorHandler<TItemDetailFormData> = () => {
     toastError("폼 입력을 확인해주세요.");
   };
 

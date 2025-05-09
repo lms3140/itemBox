@@ -1,8 +1,8 @@
 import { Outlet } from "react-router-dom";
 import { Bounce, ToastContainer } from "react-toastify";
 import styled, { createGlobalStyle, ThemeProvider } from "styled-components";
-import { darkTheme, lightTheme } from "./theme";
-import { useThemeStore } from "./store/zustandStore";
+import { darkTheme, lightTheme } from "../theme";
+import { useThemeStore } from "../store/zustandStore";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { motion, spring } from "motion/react";
 

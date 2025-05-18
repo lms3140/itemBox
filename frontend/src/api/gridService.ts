@@ -1,8 +1,8 @@
-import { AgGridReact } from "ag-grid-react";
-import { getDataFetch, postDataFetch } from "./fetch";
 import { CellValueChangedEvent } from "ag-grid-community";
+import { AgGridReact } from "ag-grid-react";
 import { Dispatch, SetStateAction } from "react";
 import { toastError, TOASTMESSAGE, toastSuccess } from "../utils/toastUtils";
+import { getDataFetch, postAuthFetch } from "./fetch";
 
 /**
  * "AG Grid"에서 하나의 행을 삭제하기 위한 함수
@@ -30,7 +30,7 @@ export const deleteRowFunc = async <T extends { id: string }>(
     const selected = gridRef.current?.api.getSelectedRows();
     if (!selected || selected.length === 0) return;
     const selectedId = selected[0].id;
-    const result = await postDataFetch(apiUrl, { id: selectedId });
+    const result = await postAuthFetch(apiUrl, { id: selectedId });
     console.log(result);
     setData((prev) => prev.filter((rows) => rows.id !== selectedId));
     toastSuccess(TOASTMESSAGE.SUCCESS_DELETE);
@@ -59,7 +59,7 @@ export const cellValueChangeHandler = async <T extends { id: string }>(
   const { oldValue, data } = e;
   const colField = e.column.getColDef().field;
   try {
-    await postDataFetch(url, data);
+    await postAuthFetch(url, data);
   } catch (error) {
     toastError(TOASTMESSAGE.ERROR_UPDATE);
     console.log(error);

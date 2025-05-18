@@ -14,3 +14,7 @@ export const homeAPIObject = {
   update: `${BASE_URL}/api/main/grid-data/update`,
   get: `${BASE_URL}/api/main/grid-rows`,
 };
+
+export const authAPIObject = {
+  login: `${BASE_URL}/login`,
+};

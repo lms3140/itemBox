@@ -33,3 +33,8 @@ export const detailFormSchema = z.object({
   customerAddress: z.string().min(1, { message: "주소가 없나요?" }),
   etc: z.string(),
 });
+
+export const loginFormSchema = z.object({
+  id: z.string().min(1, { message: "아이디를 입력해주세요." }),
+  password: z.string().min(1, { message: "비밀번호를 입력해주세요" }),
+});

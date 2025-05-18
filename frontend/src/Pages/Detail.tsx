@@ -8,24 +8,24 @@ import {
 import { AgGridReact } from "ag-grid-react";
 import { useMemo, useRef, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import styled from "styled-components";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-import CustomButton from "../components/CustomButton";
-import InfoItem from "../components/InfoItem";
-import Input from "../components/RHFInput";
-import { useThemeStore } from "../store/zustandStore";
-import { TDetailTableItem, THomeTableItem } from "../types/form";
+import { detailAPIObject } from "../api/apiURL";
+import { getDataFetch, postAuthFetch } from "../api/fetch";
 import {
   cellValueChangeHandler,
   deleteRowFunc,
   loadGridData,
 } from "../api/gridService";
-import { toastError, toastSuccess } from "../utils/toastUtils";
-import { getDataFetch, postDataFetch } from "../api/fetch";
+import CustomButton from "../components/CustomButton";
+import InfoItem from "../components/InfoItem";
+import Input from "../components/RHFInput";
 import { detailFormSchema } from "../schema/formSchema";
-import { detailAPIObject } from "../api/apiURL";
+import { useAuthStore, useThemeStore } from "../store/zustandStore";
+import { TDetailTableItem, THomeTableItem } from "../types/form";
+import { toastError, toastSuccess } from "../utils/toastUtils";
 
 // styledComponents
 
@@ -94,7 +94,9 @@ const FormControllWrapper = styled.div`
 type TDetailForm = z.infer<typeof detailFormSchema>;
 
 function Detail() {
+  const navigate = useNavigate();
   const { paramId } = useParams();
+  const { tokenObj, removeToken } = useAuthStore();
   const gridRef = useRef<AgGridReact<TDetailTableItem>>(null);
   const [rowData, setRowData] = useState<TDetailTableItem[]>([]);
 
@@ -134,13 +136,19 @@ function Detail() {
   // form 등록 함수
   const onSubmit: SubmitHandler<TDetailForm> = async (data) => {
     if (!paramId) return;
+    if (!tokenObj) {
+      toastError("인증이 만료되었습니다.");
+      removeToken();
+      navigate("/login");
+      return;
+    }
     try {
       const newData: TDetailTableItem = {
         id: uuidv4(),
         itemId: paramId,
         ...data,
       };
-      const result = await postDataFetch(detailAPIObject.add, newData);
+      const result = await postAuthFetch(detailAPIObject.add, newData);
       setRowData((v) => [...v, result.data]);
       reset();
       toastSuccess("등록을 완료했습니다.");

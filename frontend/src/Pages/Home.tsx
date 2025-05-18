@@ -18,19 +18,19 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-import { THomeTableItem } from "../types/form";
+import { postAuthFetch } from "../api/fetch";
 import {
   cellValueChangeHandler,
   deleteRowFunc,
   loadGridData,
 } from "../api/gridService";
+import { THomeTableItem } from "../types/form";
 import {
   toastError,
   toastInfo,
   TOASTMESSAGE,
   toastSuccess,
 } from "../utils/toastUtils";
-import { postDataFetch } from "../api/fetch";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import "ag-grid-community/styles/ag-grid.css";
@@ -41,10 +41,10 @@ import Input from "../components/RHFInput";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
-import CustomDatePicker from "../components/CustomDatePicker";
-import { useThemeStore } from "../store/zustandStore";
-import { homeFormSchema } from "../schema/formSchema";
 import { homeAPIObject } from "../api/apiURL";
+import CustomDatePicker from "../components/CustomDatePicker";
+import { homeFormSchema } from "../schema/formSchema";
+import { useAuthStore, useThemeStore } from "../store/zustandStore";
 
 //agGrid를 사용하기 위한 설정... 이게 뭔지는 제대로 모르겠음
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -85,6 +85,7 @@ type THomeForm = z.infer<typeof homeFormSchema>;
 
 function Home() {
   const navigate = useNavigate();
+  const { tokenObj, removeToken } = useAuthStore();
   useEffect(() => {
     toastInfo("한번 테스트 해볼까요??");
   }, []);
@@ -161,14 +162,20 @@ function Home() {
   // 서브밋 핸들러
   const onSubmit: SubmitHandler<THomeForm> = async (data: THomeForm) => {
     try {
+      if (!tokenObj) {
+        toastError("인증이 만료되었습니다.");
+        removeToken();
+        navigate("/login");
+        return;
+      }
       const newObj: THomeTableItem = {
         ...data,
         purchase_date: format(data.purchase_date, "yyyy-MM-dd"),
         release_date: format(data.release_date, "yyyy-MM-dd"),
         id: uuidv4(),
-        created_by: "admin",
+        created_by: tokenObj?.id,
       };
-      const result = await postDataFetch(homeAPIObject.add, newObj);
+      const result = await postAuthFetch(homeAPIObject.add, newObj);
       setRowData((v) => [...v, result.data]);
       reset();
       toastSuccess(TOASTMESSAGE.SUCCESS_ADD);
@@ -196,7 +203,6 @@ function Home() {
     const { id } = event.data;
     navigate(`/detail/${id}`);
   };
-
   // agGrid가 마운트 될때 실행되는 함수.
   const gridReady = async (event: GridReadyEvent<THomeTableItem, any>) => {
     event.api.sizeColumnsToFit();

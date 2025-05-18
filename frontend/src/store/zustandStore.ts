@@ -20,3 +20,26 @@ export const useThemeStore = create<themeStore>()(
     }
   )
 );
+
+type access_token = {
+  access_token: string;
+  id: string;
+  nickname: string;
+};
+
+type authStore = {
+  tokenObj: access_token | null;
+  setToken: (t: access_token) => void;
+  removeToken: () => void;
+};
+
+export const useAuthStore = create<authStore>()(
+  persist(
+    (set) => ({
+      tokenObj: null,
+      setToken: (token: access_token) => set(() => ({ tokenObj: token })),
+      removeToken: () => set(() => ({ tokenObj: null })),
+    }),
+    { name: "access_token" }
+  )
+);

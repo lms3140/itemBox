@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   GridReadyEvent,
   RowSelectionOptions,
@@ -12,8 +12,8 @@ import { useNavigate, useParams } from "react-router";
 import styled from "styled-components";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-import { detailAPIObject } from "../api/apiURL";
-import { getDataFetch, postAuthFetch } from "../api/fetch";
+import { detailAPIObject, homeAPIObject } from "../api/apiURL";
+import { getDataFetch, postAuthFetch, postDataFetch } from "../api/fetch";
 import {
   cellValueChangeHandler,
   deleteRowFunc,
@@ -99,7 +99,6 @@ function Detail() {
   const { tokenObj, removeToken } = useAuthStore();
   const gridRef = useRef<AgGridReact<TDetailTableItem>>(null);
   const [rowData, setRowData] = useState<TDetailTableItem[]>([]);
-
   const [colDefs, _] = useState<ColDef<TDetailTableItem>[]>([
     { field: "id", headerName: "id", width: 80, hide: true },
     {
@@ -176,10 +175,26 @@ function Detail() {
     return res;
   };
 
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (data) => postDataFetch(homeAPIObject.update, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["detailInfo"] });
+    },
+  });
+
   // react query
-  const { data, error } = useQuery<THomeTableItem>({
+  const { data, error } = useQuery<THomeTableItem & { margin: number }>({
     queryKey: ["detailInfo"],
-    queryFn: fetchDetailInfo,
+    queryFn: async () => {
+      const res = await fetchDetailInfo();
+      const price = Number(res.price);
+      const fee = Number(res.fee);
+      const wholesale_price = Number(res.wholesale_price);
+      const margin = price - (fee + wholesale_price);
+      return { ...res, margin };
+    },
     enabled: !!paramId,
   });
 
@@ -192,13 +207,10 @@ function Detail() {
       <Wrapper>
         <h1>{data?.name}</h1>
         <InfoWrapper>
-          <InfoItem title="도매가" content={data?.wholesale_price + "엔"} />
-          <InfoItem
-            title="소비자명시가"
-            content={data?.category_price + "엔"}
-          />
-          <InfoItem title="판매가" content={data?.price + "원"} />
-          <InfoItem title="수수료" content={data?.fee + "원"} />
+          <InfoItem title="도매가" content={data?.wholesale_price} />
+          <InfoItem title="소비자명시가" content={data?.category_price} />
+          <InfoItem title="판매가" content={data?.price} />
+          <InfoItem title="수수료" content={data?.fee} />
           <InfoItem title="카테고리" content={data?.category} />
           <InfoItem title="판매형식" content={data?.sales_type} />
           <InfoItem title="주문수량" content={data?.purchase_quantity} />
@@ -212,8 +224,18 @@ function Detail() {
           <InfoItem title="발매일자" content={data?.release_date.toString()} />
           <InfoItem title="주문일자" content={data?.purchase_date.toString()} />
           <InfoItem title="비고" content={data?.etc} />
+          <InfoItem
+            title="이익"
+            content={String(
+              Number(data?.price) -
+                (Number(data?.wholesale_price) + Number(data?.fee))
+            )}
+            className={data?.margin && data.margin >= 0 ? "profit" : "loss"}
+          />
         </InfoWrapper>
-
+        <div>
+          <CustomButton variant="primary">수정</CustomButton>
+        </div>
         <ListFormWrapper>
           <ListForm onSubmit={handleSubmit(onSubmit)}>
             <Input

@@ -4,11 +4,23 @@ import styled from "styled-components";
 const Wrapper = styled.div`
   background-color: ${({ theme }) => theme.colors.fg.disabled};
   border-radius: 10px;
-  border: 1px solid white;
+  border: 2px solid white;
   margin: 2px;
   padding: 2px;
   box-sizing: border-box;
   text-align: center;
+  &.loss {
+    border: 2px solid #ff6b6b;
+    div:nth-child(2) {
+      color: #ff6b6b;
+    }
+  }
+  &.profit {
+    border: 2px solid #4dabf7;
+    div:nth-child(2) {
+      color: #4dabf7;
+    }
+  }
 `;
 
 const Title = styled.div``;
@@ -37,13 +49,13 @@ type InfoItemProps = {
  * @param {string} [props.className] - styled-components 전달용 클래스
  * @returns {JSX.Element}
  */
-function InfoItem({ title, content, className }: InfoItemProps): JSX.Element {
+const InfoItem = (props: InfoItemProps): JSX.Element => {
   return (
-    <Wrapper className={className}>
-      <Title>{title}</Title>
-      <Content>{content}</Content>
+    <Wrapper className={props.className}>
+      <Title>{props.title}</Title>
+      <Content>{props.content}</Content>
     </Wrapper>
   );
-}
+};
 
 export default InfoItem;

@@ -145,7 +145,7 @@ def insert_main_grid_data():
             sales_type=data["sales_type"],
             etc=data["etc"],
             created_by=user_id,  # 추후 토큰
-            created_at=datetime.now()  # 현재 시각을 넣어야함. 나중에.
+            created_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # 현재 시각을 넣어야함. 나중에.
         )
 
         db.session.add(item)

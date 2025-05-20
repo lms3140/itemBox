@@ -6,14 +6,20 @@ import {
   type ColDef,
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router";
 import styled from "styled-components";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { detailAPIObject, homeAPIObject } from "../api/apiURL";
-import { getDataFetch, postAuthFetch, postDataFetch } from "../api/fetch";
+import {
+  fetchDetailInfo,
+  getDataFetch,
+  postAuthFetch,
+  postDataFetch,
+} from "../api/fetch";
 import {
   cellValueChangeHandler,
   deleteRowFunc,
@@ -26,6 +32,7 @@ import { detailFormSchema } from "../schema/formSchema";
 import { useAuthStore, useThemeStore } from "../store/zustandStore";
 import { TDetailTableItem, THomeTableItem } from "../types/form";
 import { toastError, toastSuccess } from "../utils/toastUtils";
+import ModalContent from "../components/ModalContent";
 
 // styledComponents
 
@@ -96,7 +103,6 @@ type TDetailForm = z.infer<typeof detailFormSchema>;
 function Detail() {
   const navigate = useNavigate();
   const { paramId } = useParams();
-  const { tokenObj, removeToken } = useAuthStore();
   const gridRef = useRef<AgGridReact<TDetailTableItem>>(null);
   const [rowData, setRowData] = useState<TDetailTableItem[]>([]);
   const [colDefs, _] = useState<ColDef<TDetailTableItem>[]>([
@@ -135,12 +141,6 @@ function Detail() {
   // form 등록 함수
   const onSubmit: SubmitHandler<TDetailForm> = async (data) => {
     if (!paramId) return;
-    if (!tokenObj) {
-      toastError("인증이 만료되었습니다.");
-      removeToken();
-      navigate("/login");
-      return;
-    }
     try {
       const newData: TDetailTableItem = {
         id: uuidv4(),
@@ -164,37 +164,27 @@ function Detail() {
       mode: "singleRow",
     };
   }, []);
+  const [showModal, setShowModal] = useState(false);
+  const [isLoss, setIsLoss] = useState(false);
 
   // zustand
   const { isDark } = useThemeStore();
-
-  // 상품 상세정보를 가져오는 fetch 함수
-  const fetchDetailInfo = async () => {
-    if (!paramId) throw new Error("paramId 이 없습니다.");
-    const res = await getDataFetch(detailAPIObject.getInfo(paramId));
-    return res;
-  };
-
-  const queryClient = useQueryClient();
-
-  const mutation = useMutation({
-    mutationFn: (data) => postDataFetch(homeAPIObject.update, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["detailInfo"] });
-    },
-  });
 
   // react query
   const { data, error } = useQuery<THomeTableItem & { margin: number }>({
     queryKey: ["detailInfo"],
     queryFn: async () => {
-      const res = await fetchDetailInfo();
+      const res = await fetchDetailInfo(paramId);
       const price = Number(res.price);
       const fee = Number(res.fee);
       const wholesale_price = Number(res.wholesale_price);
       const margin = price - (fee + wholesale_price);
+      if (margin < 0) {
+        setIsLoss(true);
+      } else setIsLoss(false);
       return { ...res, margin };
     },
+
     enabled: !!paramId,
   });
 
@@ -230,12 +220,27 @@ function Detail() {
               Number(data?.price) -
                 (Number(data?.wholesale_price) + Number(data?.fee))
             )}
-            className={data?.margin && data.margin >= 0 ? "profit" : "loss"}
+            className={isLoss ? "loss" : "profit"}
           />
         </InfoWrapper>
         <div>
-          <CustomButton variant="primary">수정</CustomButton>
+          <CustomButton
+            variant="primary"
+            onClick={() => {
+              setShowModal(true);
+            }}
+          >
+            수정
+          </CustomButton>
         </div>
+        {showModal &&
+          createPortal(
+            <ModalContent
+              paramsId={paramId}
+              onClose={() => setShowModal(false)}
+            />,
+            document.body
+          )}
         <ListFormWrapper>
           <ListForm onSubmit={handleSubmit(onSubmit)}>
             <Input
@@ -293,6 +298,7 @@ function Detail() {
               삭제
             </CustomButton>
           </div>
+
           <AgGridReact
             theme="legacy"
             className={isDark ? "ag-theme-alpine-dark" : "ag-theme-alpine"}

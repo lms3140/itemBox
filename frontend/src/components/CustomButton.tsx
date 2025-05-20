@@ -8,7 +8,7 @@ const Btn = styled(motion.button)<{ $variant?: TVariant }>`
   background-color: ${({ theme, $variant = "normal" }) =>
     theme.btn.variant[$variant]};
   color: ${({ theme, $variant = "normal" }) => theme.btn.text[$variant]};
-  width: 50px;
+  min-width: 50px;
   height: 30px;
   border-radius: 30px;
   cursor: pointer;

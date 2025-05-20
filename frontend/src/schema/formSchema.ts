@@ -25,6 +25,9 @@ export const homeFormSchema = z.object({
   etc: z.string(),
 });
 
+// Home.tsx의 form에 사용되는 타입
+export type THomeForm = z.infer<typeof homeFormSchema>;
+
 // Detail.tsx 의 Form에 사용되는 스키마
 export const detailFormSchema = z.object({
   customerName: z.string().min(1, { message: "이름은 필수." }),

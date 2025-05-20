@@ -8,12 +8,7 @@ import {
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Controller,
-  SubmitErrorHandler,
-  SubmitHandler,
-  useForm,
-} from "react-hook-form";
+import { SubmitErrorHandler, SubmitHandler, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { v4 as uuidv4 } from "uuid";
@@ -36,15 +31,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import CustomButton from "../components/CustomButton";
-import Input from "../components/RHFInput";
 
 import { format } from "date-fns";
-import { ko } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
 import { homeAPIObject } from "../api/apiURL";
-import CustomDatePicker from "../components/CustomDatePicker";
+import ProductForm from "../components/ProductForm";
 import { homeFormSchema } from "../schema/formSchema";
-import { useAuthStore, useThemeStore } from "../store/zustandStore";
+import { useThemeStore } from "../store/zustandStore";
 
 //agGrid를 사용하기 위한 설정... 이게 뭔지는 제대로 모르겠음
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -65,17 +58,7 @@ const SideMenu = styled.div`
   display: flex;
   justify-content: center;
   width: 200px;
-`;
-
-const FormWrapper = styled.div`
-  padding: 7px;
-  border: 2px solid ${({ theme }) => theme.colors.border};
-  border-radius: 5px;
-  box-sizing: border-box;
-
-  input {
-    background-color: ${({ theme }) => theme.colors.fg.active};
-  }
+  margin-left: 20px;
 `;
 
 // styled-components end
@@ -85,7 +68,6 @@ type THomeForm = z.infer<typeof homeFormSchema>;
 
 function Home() {
   const navigate = useNavigate();
-  const { tokenObj, removeToken } = useAuthStore();
   useEffect(() => {
     toastInfo("한번 테스트 해볼까요??");
   }, []);
@@ -144,16 +126,23 @@ function Home() {
       editable: true,
     },
     { field: "etc", minWidth: 100, headerName: "비고", editable: true },
+    {
+      field: "created_at",
+      minWidth: 100,
+      headerName: "등록일",
+      valueFormatter: ({ value }) =>
+        value ? format(new Date(value), "yyyy-MM-dd HH:mm:ss") : "-",
+    },
   ]);
-
+  const [isLoading, setIsLoading] = useState(false);
   // 데이터
   const [rowData, setRowData] = useState<THomeTableItem[]>([]);
   const gridRef = useRef<AgGridReact<THomeTableItem>>(null);
   const {
     register,
     handleSubmit,
-    reset,
     control,
+    reset,
     formState: { errors },
   } = useForm<THomeForm>({
     resolver: zodResolver(homeFormSchema),
@@ -162,18 +151,13 @@ function Home() {
   // 서브밋 핸들러
   const onSubmit: SubmitHandler<THomeForm> = async (data: THomeForm) => {
     try {
-      if (!tokenObj) {
-        toastError("인증이 만료되었습니다.");
-        removeToken();
-        navigate("/login");
-        return;
-      }
+      setIsLoading(true);
       const newObj: THomeTableItem = {
         ...data,
         purchase_date: format(data.purchase_date, "yyyy-MM-dd"),
         release_date: format(data.release_date, "yyyy-MM-dd"),
         id: uuidv4(),
-        created_by: tokenObj?.id,
+        created_by: "",
       };
       const result = await postAuthFetch(homeAPIObject.add, newObj);
       setRowData((v) => [...v, result.data]);
@@ -181,6 +165,8 @@ function Home() {
       toastSuccess(TOASTMESSAGE.SUCCESS_ADD);
     } catch (e) {
       toastError(TOASTMESSAGE.ERROR_ADD);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -234,123 +220,25 @@ function Home() {
             }}
             onCellDoubleClicked={cellClickEvent}
           />
+          <div style={{ textAlign: "end" }}>
+            <CustomButton
+              onClick={() => {
+                deleteRowFunc(homeAPIObject.delete, gridRef, setRowData);
+              }}
+              variant="danger"
+              type="button"
+            >
+              삭제
+            </CustomButton>
+          </div>
         </GridWrapper>
         <SideMenu>
-          <FormWrapper>
-            <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
-              <Input
-                label="이름"
-                name="name"
-                msg={errors.name?.message}
-                register={register}
-              />
-              <Input
-                label="판매가격"
-                name="price"
-                msg={errors.price?.message}
-                register={register}
-              />
-              <Input
-                label="카테고리"
-                name="category"
-                msg={errors.category?.message}
-                register={register}
-              />
-              <Input
-                label="도매가"
-                name="wholesale_price"
-                msg={errors.wholesale_price?.message}
-                register={register}
-              />
-              <Input
-                label="소비자권장가격"
-                name="category_price"
-                msg={errors.category_price?.message}
-                register={register}
-              />
-              <Input
-                label="수수료"
-                name="fee"
-                msg={errors.fee?.message}
-                register={register}
-              />
-              <Input
-                label="구매개수"
-                name="purchase_quantity"
-                msg={errors.purchase_quantity?.message}
-                register={register}
-              />
-              <Input
-                label="판매개수"
-                name="sold_quantity"
-                msg={errors.sold_quantity?.message}
-                register={register}
-              />
-              <label>발매날짜</label>
-              <Controller
-                name="release_date"
-                control={control}
-                render={({ field }) => (
-                  <CustomDatePicker
-                    locale={ko}
-                    selected={field.value}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    placeholder="발매날짜"
-                    msg={errors.release_date?.message}
-                  />
-                )}
-              />
-
-              <label>구매날짜</label>
-              <Controller
-                name="purchase_date"
-                control={control}
-                render={({ field }) => (
-                  <CustomDatePicker
-                    locale={ko}
-                    onBlur={field.onBlur}
-                    onChange={field.onChange}
-                    placeholder="구매날짜"
-                    selected={field.value}
-                    msg={errors.release_date?.message}
-                  />
-                )}
-              />
-              <Input
-                label="판매유형"
-                name="sales_type"
-                msg={errors.sales_type?.message}
-                register={register}
-              />
-              <Input
-                label="비고"
-                name="etc"
-                msg={errors.etc?.message}
-                register={register}
-              />
-              <div
-                style={{
-                  display: "flex",
-                  gap: "20px",
-                  justifyContent: "center",
-                }}
-              >
-                <CustomButton variant="primary" type="submit">
-                  등록
-                </CustomButton>
-                <CustomButton
-                  onClick={() => {
-                    deleteRowFunc(homeAPIObject.delete, gridRef, setRowData);
-                  }}
-                  variant="danger"
-                  type="button"
-                >
-                  삭제
-                </CustomButton>
-              </div>
-            </form>
-          </FormWrapper>
+          <ProductForm
+            isLoading={isLoading}
+            onSubmit={onSubmit}
+            onInvalid={onInvalid}
+            useFormItem={{ register, handleSubmit, control, errors }}
+          />
         </SideMenu>
       </Wrapper>
     </>

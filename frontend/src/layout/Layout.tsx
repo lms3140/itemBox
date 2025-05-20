@@ -37,8 +37,9 @@ const ThemeBtn = styled(motion.button)<{ $isDark: boolean }>`
 const Header = styled.div`
   display: flex;
   width: 100%;
-  justify-content: flex-start;
+  justify-content: space-around;
   padding-left: 40px;
+  align-items: center;
 `;
 
 const queryClient = new QueryClient();

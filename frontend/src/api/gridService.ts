@@ -85,5 +85,6 @@ export const loadGridData = async <T>(
   setRowData: Dispatch<SetStateAction<T[]>>
 ) => {
   const res = (await getDataFetch(url)) as T[];
+  console.log(res);
   setRowData((prev) => [...prev, ...res]);
 };

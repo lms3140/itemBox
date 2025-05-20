@@ -1,5 +1,6 @@
 import { useAuthStore } from "../store/zustandStore";
 import { toastError } from "../utils/toastUtils";
+import { detailAPIObject } from "./apiURL";
 
 /**
  * [POST] POST 방식의 API 호출 함수
@@ -77,4 +78,11 @@ export const getDataFetch = async (url: string): Promise<any> => {
     throw new Error(res.statusText);
   }
   return res.json();
+};
+
+// 상품 상세정보를 가져오는 fetch 함수
+export const fetchDetailInfo = async (paramId: string | undefined) => {
+  if (!paramId) throw new Error("paramId 이 없습니다.");
+  const res = await getDataFetch(detailAPIObject.getInfo(paramId));
+  return res;
 };

@@ -101,7 +101,6 @@ const FormControllWrapper = styled.div`
 type TDetailForm = z.infer<typeof detailFormSchema>;
 
 function Detail() {
-  const navigate = useNavigate();
   const { paramId } = useParams();
   const gridRef = useRef<AgGridReact<TDetailTableItem>>(null);
   const [rowData, setRowData] = useState<TDetailTableItem[]>([]);

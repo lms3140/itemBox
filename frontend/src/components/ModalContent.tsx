@@ -10,6 +10,10 @@ import { THomeTableItem } from "../types/form";
 import { toastError, TOASTMESSAGE, toastSuccess } from "../utils/toastUtils";
 import ProductForm from "./ProductForm";
 
+/**
+ * Detail.tsx에서 Info 를 수정을 하기위한 모달
+ */
+
 const Wrapper = styled.div`
   position: fixed;
   top: 50%;
@@ -35,7 +39,7 @@ type TModalProps = {
 
 const ModalContent = ({ onClose, paramsId }: TModalProps) => {
   // react query
-  const { data, error } = useQuery<THomeTableItem>({
+  const { data } = useQuery<THomeTableItem>({
     queryKey: ["detailInfo"],
     queryFn: async () => await fetchDetailInfo(paramsId),
     enabled: !!paramsId,
@@ -77,12 +81,17 @@ const ModalContent = ({ onClose, paramsId }: TModalProps) => {
     }
   };
 
+  // React Query 뮤테이션
   const mutation = useMutation({
     mutationFn: (data: THomeTableItem) => {
       return postAuthFetch(homeAPIObject.update, data);
     },
   });
+
+  // 로딩상태 관리
   const isLoading = mutation.isPending;
+
+  // React Query 캐시삭제를 위한 선언
   const queryClient = useQueryClient();
 
   return (

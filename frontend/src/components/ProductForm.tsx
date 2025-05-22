@@ -10,7 +10,7 @@ import {
 } from "react-hook-form";
 import styled from "styled-components";
 import { z } from "zod";
-import { homeFormSchema } from "../schema/formSchema";
+import { homeFormSchema, THomeForm } from "../schema/formSchema";
 import CustomButton from "./CustomButton";
 import CustomDatePicker from "./CustomDatePicker";
 import Input from "./RHFInput";
@@ -25,7 +25,6 @@ const FormWrapper = styled.div`
     background-color: ${({ theme }) => theme.colors.fg.active};
   }
 `;
-type THomeForm = z.infer<typeof homeFormSchema>;
 
 type TProductFormProps = {
   onSubmit: SubmitHandler<THomeForm>;

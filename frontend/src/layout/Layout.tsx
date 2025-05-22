@@ -8,6 +8,7 @@ import { GlobalStyle } from "../styles/globalStyle";
 import { darkTheme, lightTheme } from "../styles/theme";
 import { useEffect } from "react";
 import CustomButton from "../components/CustomButton";
+import ThemeBtn from "../components/ThemeBtn";
 
 const Wrapper = styled.div`
   display: flex;
@@ -23,17 +24,6 @@ const Title = styled.h1`
   font-size: 30px;
 `;
 
-const ThemeBtn = styled(motion.button)<{ $isDark: boolean }>`
-  width: 75px;
-  display: flex;
-  background-color: ${({ theme }) => theme.btn.variant.normal};
-  justify-content: ${({ $isDark }) => (!$isDark ? "flex-start" : "flex-end")};
-  font-size: 25px;
-  border-radius: 20px;
-  margin: 10px 0;
-  cursor: pointer;
-`;
-
 const Header = styled.div`
   display: flex;
   width: 100%;
@@ -44,7 +34,7 @@ const Header = styled.div`
 
 const queryClient = new QueryClient();
 function Layout() {
-  const { isDark, setTheme } = useThemeStore();
+  const { isDark } = useThemeStore();
   const { tokenObj, removeToken } = useAuthStore();
   const navigate = useNavigate();
   useEffect(() => {
@@ -57,20 +47,7 @@ function Layout() {
       <GlobalStyle />
       <Wrapper>
         <Header className="test">
-          <ThemeBtn
-            animate
-            onClick={() => {
-              setTheme();
-            }}
-            $isDark={isDark}
-          >
-            <motion.div
-              layout
-              transition={{ type: "spring", visualDuration: 0.2, bounce: 0.2 }}
-            >
-              {isDark ? "🌕" : "☀️"}
-            </motion.div>
-          </ThemeBtn>
+          <ThemeBtn />
           <div>
             <CustomButton variant="danger" onClick={() => removeToken()}>
               로그아웃

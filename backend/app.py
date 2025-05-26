@@ -10,18 +10,19 @@ from dotenv import load_dotenv
 import bcrypt
 from datetime import timedelta
 
-
-app = Flask(__name__, static_folder="../itemBox-project/dist")
-CORS(app,origins=["http://localhost:5173"])
+app = Flask(__name__)
 
 load_dotenv()  # .env 파일 읽기
 
+app_url = os.getenv("CORS_URL")
+api_server = os.getenv("API_SERVER")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JWT_SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=5)
 jwt = JWTManager(app)
 
+CORS(app,origins=["http://localhost:5173",app_url,api_server])
 
 
 db.init_app(app)

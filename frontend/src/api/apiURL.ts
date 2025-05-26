@@ -1,5 +1,4 @@
-// const BASE_URL = "https://prupruapiapp.store";
-const BASE_URL = "http://127.0.0.1:5000";
+const BASE_URL = "https://prupruapiapp.store";
 
 export const detailAPIObject = {
   add: `${BASE_URL}/api/detail/grid-row/add`,

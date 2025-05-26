@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import LoginLayout from "./layout/LoginLayout";
 import NotFound from "./pages/NotFound";
+import PrivateRoute from "./routes/PrivateRoute";
 
 const router = createBrowserRouter([
   {
@@ -19,12 +20,20 @@ const router = createBrowserRouter([
     errorElement: <NotFound />,
     children: [
       {
-        element: <Home />,
+        element: (
+          <PrivateRoute>
+            <Home />
+          </PrivateRoute>
+        ),
         index: true,
       },
       {
         path: "/detail/:paramId",
-        element: <Detail />,
+        element: (
+          <PrivateRoute>
+            <Detail />
+          </PrivateRoute>
+        ),
       },
     ],
   },

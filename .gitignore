@@ -30,3 +30,4 @@ backend/database*
 *.pyc
 backend/instance/database.db
 backend/models.py
+backend/.env

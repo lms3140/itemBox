@@ -9,8 +9,7 @@ import {
   UseFormRegister,
 } from "react-hook-form";
 import styled from "styled-components";
-import { z } from "zod";
-import { homeFormSchema, THomeForm } from "../schema/formSchema";
+import { THomeForm } from "../schema/formSchema";
 import CustomButton from "./CustomButton";
 import CustomDatePicker from "./CustomDatePicker";
 import Input from "./RHFInput";

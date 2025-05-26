@@ -1,25 +1,20 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   GridReadyEvent,
   RowSelectionOptions,
   type ColDef,
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import styled from "styled-components";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-import { detailAPIObject, homeAPIObject } from "../api/apiURL";
-import {
-  fetchDetailInfo,
-  getDataFetch,
-  postAuthFetch,
-  postDataFetch,
-} from "../api/fetch";
+import { detailAPIObject } from "../api/apiURL";
+import { fetchDetailInfo, postAuthFetch } from "../api/fetch";
 import {
   cellValueChangeHandler,
   deleteRowFunc,
@@ -27,12 +22,12 @@ import {
 } from "../api/gridService";
 import CustomButton from "../components/CustomButton";
 import InfoItem from "../components/InfoItem";
+import ModalContent from "../components/ModalContent";
 import Input from "../components/RHFInput";
 import { detailFormSchema } from "../schema/formSchema";
-import { useAuthStore, useThemeStore } from "../store/zustandStore";
+import { useThemeStore } from "../store/zustandStore";
 import { TDetailTableItem, THomeTableItem } from "../types/form";
 import { toastError, toastSuccess } from "../utils/toastUtils";
-import ModalContent from "../components/ModalContent";
 
 // styledComponents
 

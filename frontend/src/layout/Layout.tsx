@@ -1,14 +1,13 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { motion } from "motion/react";
+import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { Bounce, ToastContainer } from "react-toastify";
 import styled, { ThemeProvider } from "styled-components";
+import CustomButton from "../components/CustomButton";
+import ThemeBtn from "../components/ThemeBtn";
 import { useAuthStore, useThemeStore } from "../store/zustandStore";
 import { GlobalStyle } from "../styles/globalStyle";
 import { darkTheme, lightTheme } from "../styles/theme";
-import { useEffect } from "react";
-import CustomButton from "../components/CustomButton";
-import ThemeBtn from "../components/ThemeBtn";
 
 const Wrapper = styled.div`
   display: flex;
